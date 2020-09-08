@@ -58,13 +58,15 @@ class bus:
         bank_table[30] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.kernal_rom ]
         bank_table[31] = [ self.ram, self.ram, self.ram, self.basic_rom, self.ram, self.i_o, self.kernal_rom ]
 
+        self.bs_setting = 31  # default
+
     def read(self, addr):
-        device = bank_table[zones[addr / 4096]]
+        device = bank_table[bs_setting][zones[addr / 4096]]
 
         return device(addr)
 
     def write(self, addr, value):
-        device = bank_table[zones[addr / 4096]]
+        device = bank_table[bs_setting][zones[addr / 4096]]
 
         if device.write_through():
             self.ram.write(addr, value)
