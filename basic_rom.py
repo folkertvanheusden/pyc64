@@ -2,10 +2,12 @@ from bus_device import bus_device
 
 class basic_rom(bus_device):
     def __init__(self):
-        pass
+        fh = open('basic.901226-01.bin', 'rb')
+        self.rom: List[int] = [ int(b) for b in fh.read() ]
+        fh.close()
 
     def write_through(self):
         return True
 
     def read(self, addr):
-        return None
+        return self.rom[addr - 0xa000]
