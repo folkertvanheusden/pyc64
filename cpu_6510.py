@@ -179,12 +179,12 @@ class cpu_6510:
         self.sp -= 1
         self.sp &= 0xff
 
-    def push_stack_16b(self, p):
-        self.bus.write(self.sp + 0x100, p >> 8)
+    def push_stack_16b(self, val):
+        self.bus.write(self.sp + 0x100, val >> 8)
         self.sp -= 1
         self.sp &= 0xff
 
-        self.bus.write(self.sp + 0x100, p & 255)
+        self.bus.write(self.sp + 0x100, val & 255)
         self.sp -= 1
         self.sp &= 0xff
 
@@ -194,7 +194,7 @@ class cpu_6510:
 
         return self.bus.read(self.sp + 0x100)
 
-    def pop_stack_16b():
+    def pop_stack_16b(self):
         self.sp += 1
         self.sp &= 0xff
         addr = self.bus.read(self.sp + 0x100)
@@ -205,14 +205,14 @@ class cpu_6510:
 
         return addr
 
-    def set_NZ_flags(self, resultValue):
-        if resultValue > 127:  # NEGATIVE
+    def set_NZ_flags(self, result_value):
+        if result_value > 127:  # NEGATIVE
             self.p |= 128
 
         else:
             self.p &= ~128
 
-        if resultValue == 0:  # ZERO
+        if result_value == 0:  # ZERO
             self.p |= 2
 
         else:
@@ -393,8 +393,8 @@ class cpu_6510:
             self.p &= ~1
         value <<= 1
         value &= 0xff
-        self.set_NZ_flags(self.value)
-        return self.value
+        self.set_NZ_flags(value)
+        return value
 
     def do_LSR(self, value):
         if value & 1:
@@ -662,7 +662,7 @@ class cpu_6510:
 
     def NOP_zeropage(self, opcode):
         self.data_zeropage()
-        cycles += 3
+        self.cycles += 3
 
     def NOP_zeropage_x(self, opcode):
         self.data_zeropage_x()
@@ -670,7 +670,7 @@ class cpu_6510:
 
     def NOP_absolute(self, opcode):
         self.data_absolute()
-        cycles += 4
+        self.cycles += 4
 
     def NOP_absolute_x(self, opcode):
         self.data_absolute_x()
@@ -812,8 +812,8 @@ class cpu_6510:
         self.cycles += 6
 
     def SEI(self, opcode):
-        p |= 4
-        cycles += 2
+        self.p |= 4
+        self.cycles += 2
 
     def TXA(self, opcode):
         self.a = self.x
