@@ -7,6 +7,7 @@ from cartridge_lo import cartridge_lo
 from character_rom import character_rom
 from i_o import i_o
 from kernal_rom import kernal_rom
+from nothing import nothing
 from ram import ram
 
 class bus:

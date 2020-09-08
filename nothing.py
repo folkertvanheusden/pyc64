@@ -1,6 +1,6 @@
 from bus_device import bus_device
 
-class character_rom(bus_device):
+class nothing(bus_device):
     def __init__(self):
         pass
 
@@ -8,4 +8,4 @@ class character_rom(bus_device):
         return True
 
     def read(self, addr):
-        return 0x00
+        return 0xee

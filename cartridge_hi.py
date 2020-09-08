@@ -8,4 +8,4 @@ class cartridge_hi(bus_device):
         return True
 
     def read(self, addr):
-        return None
+        return 0xee
