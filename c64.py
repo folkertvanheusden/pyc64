@@ -13,7 +13,7 @@ class cbm64:
 
     def run(self):
         while True:
-            print('%04x' % self.cpu.pc)
+            #print('%04x' % self.cpu.pc)
             self.cpu.tick()
 
 c64 = cbm64()

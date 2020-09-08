@@ -186,8 +186,7 @@ class cpu_6510:
     def tick(self):
         old_addr = self.pc
         opcode = self.read_pc()
-        print('%04x %02x' % (old_addr, opcode))
-
+        # print('%04x %02x' % (old_addr, opcode))
 
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
@@ -241,9 +240,9 @@ class cpu_6510:
 
     def set_CZN_flags(self, register, value):
         if value > register:  # CARRY
-            self.p |= 1
-        else:
             self.p &= ~1
+        else:
+            self.p |= 1
 
         if value == register:  # ZERO
             self.p |= 2
@@ -358,12 +357,12 @@ class cpu_6510:
         distance = self.read_pc()
 
         if (self.p & flag) == set_:
-            if distance > 127:
+            if distance >= 128:
                 distance = -(256 - distance)
             self.pc += distance
             self.pc &= 0xffff
 
-        self.cycles += 2
+        self.cycles += 2  # FIXME
 
     def BCC(self, opcode):
         self.do_Bxx(1, 0)
@@ -837,7 +836,7 @@ class cpu_6510:
 
     def JSR(self, opcode):
         new_addr = self.read_pc_16b()
-        self.push_stack_16b(self.pc)
+        self.push_stack_16b(self.pc - 1)
         self.pc = new_addr
         self.cycles += 6
 
@@ -875,7 +874,7 @@ class cpu_6510:
         self.cycles += 2
 
     def RTS(self, opcode):
-        self.pc = self.pop_stack_16b()
+        self.pc = self.pop_stack_16b() + 1
         self.cycles += 6
 
     def CLD(self, opcode):
