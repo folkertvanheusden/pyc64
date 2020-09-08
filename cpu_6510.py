@@ -30,19 +30,24 @@ class cpu_6510:
         self.opcodes[0x21] = self.AND_indirect_x
         self.opcodes[0x24] = self.BIT_zeropage
         self.opcodes[0x25] = self.AND_zeropage
+        self.opcodes[0x26] = self.ROL
         self.opcodes[0x28] = self.PLP
         self.opcodes[0x29] = self.AND_immediate
+        self.opcodes[0x2a] = self.ROL
         self.opcodes[0x2c] = self.BIT_absolute
         self.opcodes[0x2d] = self.AND_absolute
+        self.opcodes[0x2e] = self.ROL
         self.opcodes[0x30] = self.BMI
         self.opcodes[0x31] = self.AND_indirect_y
         self.opcodes[0x34] = self.NOP_zeropage_x
         self.opcodes[0x35] = self.AND_zeropage_x
+        self.opcodes[0x36] = self.ROL
         self.opcodes[0x38] = self.SEC
         self.opcodes[0x39] = self.AND_absolute_y
         self.opcodes[0x3A] = self.NOP
         self.opcodes[0x3C] = self.NOP_absolute
         self.opcodes[0x3d] = self.AND_absolute_x
+        self.opcodes[0xee] = self.ROL
         self.opcodes[0x41] = self.EOR_indirect_x
         self.opcodes[0x44] = self.NOP_zeropage
         self.opcodes[0x45] = self.EOR_zeropage
@@ -82,9 +87,15 @@ class cpu_6510:
         self.opcodes[0x80] = self.NOP_immediate
         self.opcodes[0x81] = self.ST_indirect_x
         self.opcodes[0x82] = self.NOP_immediate
+        self.opcodes[0x84] = self.ST_zeropage
+        self.opcodes[0x85] = self.ST_zeropage
+        self.opcodes[0x86] = self.ST_zeropage
         self.opcodes[0x88] = self.DEY
         self.opcodes[0x89] = self.NOP_immediate
         self.opcodes[0x8a] = self.TXA
+        self.opcodes[0x8c] = self.ST_absolute
+        self.opcodes[0x8d] = self.ST_absolute
+        self.opcodes[0x8e] = self.ST_absolute
         self.opcodes[0x90] = self.BCC
         self.opcodes[0x91] = self.ST_indirect_y
         self.opcodes[0x94] = self.ST_zeropage_x
@@ -116,15 +127,19 @@ class cpu_6510:
         self.opcodes[0xbc] = self.LDY_absolute_x
         self.opcodes[0xbd] = self.LDA_absolute_x
         self.opcodes[0xbe] = self.LDX_absolute_y
+        self.opcodes[0xc0] = self.CMP_immediate
         self.opcodes[0xc1] = self.CMP_indirect_x
         self.opcodes[0xC2] = self.NOP_immediate
+        self.opcodes[0xc4] = self.CMP_zeropage
+        self.opcodes[0xc5] = self.CMP_zeropage
         self.opcodes[0xc6] = self.DEC_zeropage
         self.opcodes[0xc8] = self.INY
+        self.opcodes[0xc9] = self.CMP_immediate
         self.opcodes[0xca] = self.DEX
         self.opcodes[0xcc] = self.CMP_absolute
         self.opcodes[0xcd] = self.CMP_absolute
         self.opcodes[0xce] = self.DEC_absolute
-        self.opcodes[0xd0] = self.BEQ
+        self.opcodes[0xd0] = self.BNE
         self.opcodes[0xd1] = self.CMP_indirect_y
         self.opcodes[0xD4] = self.NOP_zeropage_x
         self.opcodes[0xd5] = self.CMP_zeropage_x
@@ -135,8 +150,10 @@ class cpu_6510:
         self.opcodes[0xDC] = self.NOP_absolute
         self.opcodes[0xdd] = self.CMP_absolute_x
         self.opcodes[0xde] = self.DEC_absolute_x
+        self.opcodes[0xe0] = self.CMP_immediate
         self.opcodes[0xe1] = self.SBC_indirect_x
         self.opcodes[0xE2] = self.NOP_immediate
+        self.opcodes[0xe4] = self.CMP_zeropage
         self.opcodes[0xe5] = self.SBC_zeropage
         self.opcodes[0xe6] = self.INC_zeropage
         self.opcodes[0xe8] = self.INX
@@ -145,7 +162,7 @@ class cpu_6510:
         self.opcodes[0xec] = self.CMP_absolute
         self.opcodes[0xed] = self.SBC_absolute
         self.opcodes[0xee] = self.INC_absolute
-        self.opcodes[0xf0] = self.BNE
+        self.opcodes[0xf0] = self.BEQ
         self.opcodes[0xf1] = self.SBC_indirect_y
         self.opcodes[0xF4] = self.NOP_zeropage_x
         self.opcodes[0xf5] = self.SBC_zeropage_x
@@ -159,7 +176,7 @@ class cpu_6510:
     def reset(self):
         self.bus.reset()
 
-        self.pc = (self.bus.read(0xfffc) << 8) | self.bus.read(0xfffd)
+        self.pc = self.bus.read(0xfffc) | (self.bus.read(0xfffd) << 8)
         self.a = self.x = self.y = 0
         self.sp = 0
         self.p = 0
@@ -167,12 +184,16 @@ class cpu_6510:
         self.cycles = 0
 
     def tick(self):
-        opcode = self.bus.read(self.pc)
+        old_addr = self.pc
+        opcode = self.read_pc()
+        print('%04x %02x' % (old_addr, opcode))
+
 
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
-
-        self.pc += 1
+        else:
+            print('UNKNOWN OPCODE ^')
+            assert False
 
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
@@ -236,7 +257,7 @@ class cpu_6510:
             self.p &= ~128
 
     def read16b(self, addr):
-        return (self.bus.read(addr) << 8) | self.bus.read((addr + 1) & 0xffff)
+        return self.bus.read(addr) | (self.bus.read((addr + 1) & 0xffff) << 8)
 
     def read_pc(self):
         value = self.bus.read(self.pc)
@@ -336,20 +357,19 @@ class cpu_6510:
     def do_Bxx(self, flag, set_):
         distance = self.read_pc()
 
-        if distance > 127:
-            distance = -(256 - distance)
-
         if (self.p & flag) == set_:
+            if distance > 127:
+                distance = -(256 - distance)
             self.pc += distance
             self.pc &= 0xffff
 
         self.cycles += 2
 
     def BCC(self, opcode):
-        self.do_Bxx(1, 1)
+        self.do_Bxx(1, 0)
 
     def BCS(self, opcode):
-        self.do_Bxx(1, 0)
+        self.do_Bxx(1, 1)
 
     def BEQ(self, opcode):
         self.do_Bxx(2, 2)
@@ -413,8 +433,8 @@ class cpu_6510:
             self.p &= ~2
 
     def LDA_immediate(self, opcode):
-        a = self.read_pc()
-        self.set_NZ_flags(a)
+        self.a = self.read_pc()
+        self.set_NZ_flags(self.a)
         self.cycles += 2
 
     def LDX_immediate(self, opcode):
@@ -509,6 +529,8 @@ class cpu_6510:
             register = self.x
         elif opcode == 0x84:
             register = self.y
+        else:
+            assert False
         addr = self.read_pc()
         self.bus.write(addr, register)
         self.cycles += 3
@@ -524,10 +546,12 @@ class cpu_6510:
     def ST_absolute(self, opcode):
         if opcode == 0x8d:
             val = self.a
-        elif opcode == 0xe:
+        elif opcode == 0x8e:
             val = self.x
-        elif opcode == 0xc:
+        elif opcode == 0x8c:
             val = self.y
+        else:
+            assert False
         self.bus.write(self.read_pc_16b(), val)
         self.cycles += 4
 
@@ -554,6 +578,8 @@ class cpu_6510:
             register = self.x
         elif opcode == 0xc0:
             register = self.y
+        else:
+            assert False
         self.set_CZN_flags(register, self.data_immediate())
         self.cycles += 2
 
@@ -564,6 +590,8 @@ class cpu_6510:
             register = self.x
         elif opcode == 0xc4:
             register = self.y
+        else:
+            assert False
         self.set_CZN_flags(register, self.data_zeropage())
         self.cycles += 3
 
@@ -578,6 +606,8 @@ class cpu_6510:
             register = self.x
         elif opcode == 0xc4:
             register = self.y
+        else:
+            assert False
         self.set_CZN_flags(register, self.data_absolute())
         self.cycles += 4
 
@@ -998,3 +1028,30 @@ class cpu_6510:
 
     def BIT_absolute(self, opcode):
         self.do_BIT(self.data_absolute())
+
+    def ROL(self, opcode):
+        old_carry = self.p & 1
+
+        if opcode == 0x2a:
+            self.p |= self.a >> 7
+            self.a <<= 1
+            self.a |= old_carry
+
+        elif opcode == 0x26 or opcode == 0x36:
+            zp_addr = self.addr_zeropage() if opcode == 0x26 else self.addr_zeropage_x()
+            val = self.bus.read(zp_addr)
+            self.p |= val >> 7
+            val <<= 1
+            val |= old_carry
+            self.bus.write(zp_addr, val)
+
+        elif opcode == 0x2e or opcode == 0x3e:
+            zp_addr = self.addr_absolute() if opcode == 0x2e else self.addr_absolute_x()
+            val = self.bus.read(zp_addr)
+            self.p |= val >> 7
+            val <<= 1
+            val |= old_carry
+            self.bus.write(zp_addr, val)
+
+        else:
+            assert False
