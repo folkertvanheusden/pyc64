@@ -61,11 +61,20 @@ class bus:
         self.bs_setting = 31  # default
 
     def read(self, addr):
+        if addr == 0x0001:  # bank switch register
+            return self.bs_setting
+
         device = bank_table[bs_setting][zones[addr / 4096]]
 
         return device(addr)
 
     def write(self, addr, value):
+        if addr == 0x0001:  # bank switch register
+            # use only lower 3 bits
+            self.bs_setting &= 0x18
+            self.bs_setting |= value & 7
+            return
+
         device = bank_table[bs_setting][zones[addr / 4096]]
 
         if device.write_through():
