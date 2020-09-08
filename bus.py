@@ -11,63 +11,69 @@ from nothing import nothing
 from ram import ram
 
 class bus:
-    zones = [ 0 ] * 16
-    zones[0] = 0
-    zones[1] = zones[2] = zones[3] = zones[4] = zones[5] = zones[6] = zones[7] = 1
-    zones[8] = zones[9] = 2
-    zones[10] = zones[11] = 3
-    zones[12] = 4
-    zones[13] = 5
-    zones[14] = zones[15] = 6
-
     def __init__(self):
-        self.ram = ram()
         self.basic_rom = basic_rom()
+        self.cartridge_hi = cartridge_hi()
+        self.cartridge_lo = cartridge_lo()
+        self.character_rom = character_rom()
+        self.i_o = i_o()
         self.kernal_rom = kernal_rom()
+        self.nothing = nothing()
+        self.ram = ram()
 
-        bank_table = [ ] * 32
-        bank_table[0] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[1] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[2] = [ self.ram, self.ram, self.ram, self.cartridge_hi, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[3] = [ self.ram, self.ram, self.cartridge_lo, self.cartridge_hi, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[4] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[5] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
-        bank_table[6] = [ self.ram, self.ram, self.ram, self.cartridge_hi, self.ram, self.i_o, self.kernal_rom ]
-        bank_table[7] = [ self.ram, self.ram, self.cartridge_lo, self.cartridge_hi, self.ram, self.i_o, self.kernal_rom ]
-        bank_table[8] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[9] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.ram ]
-        bank_table[10] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[11] = [ self.ram, self.ram, self.cartridge_lo, self.basic_rom, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[12] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[13] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
-        bank_table[14] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.kernal_rom ]
-        bank_table[15] = [ self.ram, self.ram, self.cartridge_lo, self.basic_rom, self.ram, self.i_o, self.kernal_rom ]
-        bank_table[16] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[17] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[18] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[19] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[20] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[21] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[22] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[23] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
-        bank_table[24] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[25] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.ram ]
-        bank_table[26] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[27] = [ self.ram, self.ram, self.ram, self.basic_rom, self.ram, self.character_rom, self.kernal_rom ]
-        bank_table[28] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
-        bank_table[29] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
-        bank_table[30] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.kernal_rom ]
-        bank_table[31] = [ self.ram, self.ram, self.ram, self.basic_rom, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table = [ None ] * 32
+        self.bank_table[0] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[1] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[2] = [ self.ram, self.ram, self.ram, self.cartridge_hi, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[3] = [ self.ram, self.ram, self.cartridge_lo, self.cartridge_hi, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[4] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[5] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
+        self.bank_table[6] = [ self.ram, self.ram, self.ram, self.cartridge_hi, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table[7] = [ self.ram, self.ram, self.cartridge_lo, self.cartridge_hi, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table[8] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[9] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.ram ]
+        self.bank_table[10] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[11] = [ self.ram, self.ram, self.cartridge_lo, self.basic_rom, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[12] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[13] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
+        self.bank_table[14] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table[15] = [ self.ram, self.ram, self.cartridge_lo, self.basic_rom, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table[16] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[17] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[18] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[19] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[20] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[21] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[22] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[23] = [ self.ram, self.nothing, self.cartridge_lo, self.nothing, self.nothing, self.i_o, self.cartridge_hi ]
+        self.bank_table[24] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[25] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.ram ]
+        self.bank_table[26] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[27] = [ self.ram, self.ram, self.ram, self.basic_rom, self.ram, self.character_rom, self.kernal_rom ]
+        self.bank_table[28] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
+        self.bank_table[29] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.ram ]
+        self.bank_table[30] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.i_o, self.kernal_rom ]
+        self.bank_table[31] = [ self.ram, self.ram, self.ram, self.basic_rom, self.ram, self.i_o, self.kernal_rom ]
 
+        self.zones = [ 0 ] * 16
+        self.zones[0] = 0
+        self.zones[1] = self.zones[2] = self.zones[3] = self.zones[4] = self.zones[5] = self.zones[6] = self.zones[7] = 1
+        self.zones[8] = self.zones[9] = 2
+        self.zones[10] = self.zones[11] = 3
+        self.zones[12] = 4
+        self.zones[13] = 5
+        self.zones[14] = self.zones[15] = 6
+
+    def reset(self):
         self.bs_setting = 31  # default
 
     def read(self, addr):
         if addr == 0x0001:  # bank switch register
             return self.bs_setting
 
-        device = bank_table[bs_setting][zones[addr / 4096]]
+        device = self.bank_table[self.bs_setting][self.zones[addr // 4096]]
 
-        return device(addr)
+        return device.read(addr)
 
     def write(self, addr, value):
         if addr == 0x0001:  # bank switch register
@@ -76,10 +82,10 @@ class bus:
             self.bs_setting |= value & 7
             return
 
-        device = bank_table[bs_setting][zones[addr / 4096]]
+        device = self.bank_table[self.bs_setting][self.zones[addr // 4096]]
 
         if device.write_through():
             self.ram.write(addr, value)
 
         else:
-            device(addr, value)
+            device.write(addr, value)
