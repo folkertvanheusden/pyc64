@@ -71,18 +71,25 @@ class bus:
         if addr == 0x0001:  # bank switch register
             return self.bs_setting
 
-        device = self.bank_table[self.bs_setting][self.zones[addr // 4096]]
+        zone = self.zones[addr // 4096]
+        device = self.bank_table[self.bs_setting][zone]
 
         return device.read(addr)
 
     def write(self, addr, value):
         if addr == 0x0001:  # bank switch register
+            print('BS was: %02x' % self.bs_setting)
             # use only lower 3 bits
             self.bs_setting &= 0x18
             self.bs_setting |= value & 7
+            print('BS  is: %02x by setting %02x' % (self.bs_setting, value))
             return
 
-        device = self.bank_table[self.bs_setting][self.zones[addr // 4096]]
+        if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
+            print('%c' % value, end='', flush=True)
+
+        zone = self.zones[addr // 4096]
+        device = self.bank_table[self.bs_setting][zone]
 
         if device.write_through():
             self.ram.write(addr, value)
