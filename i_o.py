@@ -11,4 +11,5 @@ class i_o(bus_device):
         return 0  # FIXME
 
     def write(self, addr, value):
-        pass
+        if addr >= 0xd400 and addr < 0xd400 + 1024:
+            print('%c' % value)
