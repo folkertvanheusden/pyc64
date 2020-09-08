@@ -127,10 +127,14 @@ class cpu_6510:
         self.opcodes[0xbc] = self.LDY_absolute_x
         self.opcodes[0xbd] = self.LDA_absolute_x
         self.opcodes[0xbe] = self.LDX_absolute_y
+        self.opcodes[0xc0] = self.CMP_immediate
         self.opcodes[0xc1] = self.CMP_indirect_x
         self.opcodes[0xC2] = self.NOP_immediate
+        self.opcodes[0xc4] = self.CMP_zeropage
+        self.opcodes[0xc5] = self.CMP_zeropage
         self.opcodes[0xc6] = self.DEC_zeropage
         self.opcodes[0xc8] = self.INY
+        self.opcodes[0xc9] = self.CMP_immediate
         self.opcodes[0xca] = self.DEX
         self.opcodes[0xcc] = self.CMP_absolute
         self.opcodes[0xcd] = self.CMP_absolute
@@ -146,8 +150,10 @@ class cpu_6510:
         self.opcodes[0xDC] = self.NOP_absolute
         self.opcodes[0xdd] = self.CMP_absolute_x
         self.opcodes[0xde] = self.DEC_absolute_x
+        self.opcodes[0xe0] = self.CMP_immediate
         self.opcodes[0xe1] = self.SBC_indirect_x
         self.opcodes[0xE2] = self.NOP_immediate
+        self.opcodes[0xe4] = self.CMP_zeropage
         self.opcodes[0xe5] = self.SBC_zeropage
         self.opcodes[0xe6] = self.INC_zeropage
         self.opcodes[0xe8] = self.INX
