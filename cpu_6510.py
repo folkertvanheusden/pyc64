@@ -175,16 +175,16 @@ class cpu_6510:
         self.pc += 1
 
     def push_stack(self, val):
-        bus.write(self.sp + 0x100, val)
+        self.bus.write(self.sp + 0x100, val)
         self.sp -= 1
         self.sp &= 0xff
 
     def push_stack_16b(self, p):
-        bus.write(self.sp + 0x100, p >> 8)
+        self.bus.write(self.sp + 0x100, p >> 8)
         self.sp -= 1
         self.sp &= 0xff
 
-        bus.write(self.sp + 0x100, p & 255)
+        self.bus.write(self.sp + 0x100, p & 255)
         self.sp -= 1
         self.sp &= 0xff
 
@@ -192,16 +192,16 @@ class cpu_6510:
         self.sp += 1
         self.sp &= 0xff
 
-        return bus.read(self.sp + 0x100)
+        return self.bus.read(self.sp + 0x100)
 
     def pop_stack_16b():
         self.sp += 1
         self.sp &= 0xff
-        addr = bus.read(self.sp + 0x100)
+        addr = self.bus.read(self.sp + 0x100)
 
         self.sp += 1
         self.sp &= 0xff
-        addr += bus.read(self.sp + 0x100) << 8
+        addr += self.bus.read(self.sp + 0x100) << 8
 
         return addr
 
@@ -235,14 +235,17 @@ class cpu_6510:
         else:
             self.p &= ~128
 
+    def read16b(self, addr):
+        return (self.bus.read(addr) << 8) | self.bus.read((addr + 1) & 0xffff)
+
     def read_pc(self):
-        value = bus.read(self.pc)
+        value = self.bus.read(self.pc)
         self.pc += 1
         self.pc &= 0xffff
         return value
 
     def read_pc_16b(self):
-        value = bus.read16b(self.pc)
+        value = self.read16b(self.pc)
         self.pc += 2
         self.pc &= 0xffff
         return value
@@ -251,19 +254,19 @@ class cpu_6510:
         return self.read_pc()
 
     def data_absolute(self):
-        return bus.read(self.addr_absolute())
+        return self.bus.read(self.addr_absolute())
 
     def addr_absolute(self):
-        return read_pc_16b()
+        return self.read_pc_16b()
 
     def addr_absolute_x(self):
-        addr = read_pc_16b()
+        addr = self.read_pc_16b()
         addr += self.x
         addr &= 0xffff
         return addr
 
     def data_absolute_x(self):
-        return bus.read(self.addr_absolute_x())
+        return self.bus.read(self.addr_absolute_x())
 
     def addr_absolute_y(self):
         addr = self.read_pc_16b()
@@ -272,31 +275,31 @@ class cpu_6510:
         return addr
 
     def data_absolute_y(self):
-        return bus.read(self.addr_absolute_y())
+        return self.bus.read(self.addr_absolute_y())
 
     def addr_indirect_x(self):
         addr = self.x
         addr += self.read_pc()
-        addr2 = bus.read16b(addr)
+        addr2 = self.read16b(addr)
         return addr2
 
     def data_indirect_x(self):
-        return bus.read(self.addr_indirect_x())
+        return self.bus.read(self.addr_indirect_x())
 
     def addr_indirect_y(self):
         addr = self.read_pc()
-        addr2 = bus.read16b(addr)
+        addr2 = self.read16b(addr)
         addr3 = (addr2 + self.y) & 0xffff
         return addr3
 
     def data_indirect_y(self):
         addr = self.addr_indirect_y()
-        data = bus.read(addr)
+        data = self.bus.read(addr)
         return data
 
     def data_zeropage(self):
         addr = self.addr_zeropage()
-        data = bus.read(addr)
+        data = self.bus.read(addr)
         return data
 
     def addr_zeropage(self):
@@ -307,27 +310,27 @@ class cpu_6510:
         return (addr + self.x) & 0xffff
 
     def data_zeropage_x(self):
-        return bus.read(self.addr_zeropage_x())
+        return self.bus.read(self.addr_zeropage_x())
 
     def addr_zeropage_y(self):
         addr = self.read_pc()
         return (addr + self.y) & 0xffff
 
     def data_zeropage_y(self):
-        return bus.read(self.addr_zeropage_y())
+        return self.bus.read(self.addr_zeropage_y())
 
     def do_DEC(self, addr):
-        data = bus.read(addr)
+        data = self.bus.read(addr)
         data -= 1
         data &= 255
-        bus.write(addr, data)
+        self.bus.write(addr, data)
         self.set_NZ_flags(data)
 
     def do_INC(self, addr):
-        data = bus.read(addr)
+        data = self.bus.read(addr)
         data += 1
         data &= 255
-        bus.write(addr, data)
+        self.bus.write(addr, data)
         self.set_NZ_flags(data)
 
     def do_Bxx(self, flag, set_):
@@ -507,15 +510,15 @@ class cpu_6510:
         elif opcode == 0x84:
             register = self.y
         addr = self.read_pc()
-        bus.write(addr, register)
+        self.bus.write(addr, register)
         self.cycles += 3
 
     def ST_zeropage_x(self, opcode):
-        bus.write(self.addr_zeropage_x(), self.y)
+        self.bus.write(self.addr_zeropage_x(), self.y)
         self.cycles += 4
 
     def ST_zeropage_y(self, opcode):
-        bus.write(self.addr_zeropage_y(), self.x)
+        self.bus.write(self.addr_zeropage_y(), self.x)
         self.cycles += 4
 
     def ST_absolute(self, opcode):
@@ -525,23 +528,23 @@ class cpu_6510:
             val = self.x
         elif opcode == 0xc:
             val = self.y
-        bus.write(self.read_pc_16b(), val)
+        self.bus.write(self.read_pc_16b(), val)
         self.cycles += 4
 
     def ST_absolute_x(self, opcode):
-        bus.write(self.addr_absolute_x(), self.a)
+        self.bus.write(self.addr_absolute_x(), self.a)
         self.cycles += 5
 
     def ST_absolute_y(self, opcode):
-        bus.write(self.addr_absolute_y(), self.a)
+        self.bus.write(self.addr_absolute_y(), self.a)
         self.cycles += 5
 
     def ST_indirect_x(self, opcode):
-        bus.write(self.addr_indirect_x(), self.a)
+        self.bus.write(self.addr_indirect_x(), self.a)
         self.cycles += 6
 
     def ST_indirect_y(self, opcode):
-        bus.write(self.addr_indirect_y(), self.a)
+        self.bus.write(self.addr_indirect_y(), self.a)
         self.cycles += 6
 
     def CMP_immediate(self, opcode):
@@ -679,7 +682,7 @@ class cpu_6510:
 
     def JMP_absolute_indirect(self, opcode):
         addr = self.read_pc_16b()
-        self.pc = bus.read16b(addr)
+        self.pc = self.read16b(addr)
         self.cycles += 5
 
     def EOR_immediate(self, opcode):
@@ -948,22 +951,22 @@ class cpu_6510:
 
     def ASL_zeropage(self, opcode):
         addr = self.addr_zeropage()
-        bus.write(addr, self.do_ASL(bus.read(addr)))
+        self.bus.write(addr, self.do_ASL(self.bus.read(addr)))
         self.cycles += 5
 
     def ASL_zeropage_x(self, opcode):
         addr = self.addr_zeropage_x()
-        bus.write(addr, self.do_ASL(bus.read(addr)))
+        self.bus.write(addr, self.do_ASL(self.bus.read(addr)))
         self.cycles += 6
 
     def ASL_absolute(self, opcode):
         addr = self.addr_absolute()
-        bus.write(addr, self.do_ASL(bus.read(addr)))
+        self.bus.write(addr, self.do_ASL(self.bus.read(addr)))
         self.cycles += 6
 
     def ASL_absolute_x(self, opcode):
         addr = self.addr_absolute_x()
-        bus.write(addr, self.do_ASL(bus.read(addr)))
+        self.bus.write(addr, self.do_ASL(self.bus.read(addr)))
         self.cycles += 7
 
     def LSR_accumulator(self, opcode):
@@ -971,23 +974,23 @@ class cpu_6510:
         self.cycles += 2
 
     def LSR_zeropage(self, opcode):
-        addr self.= addr_zeropage()
-        bus.write(addr, self.do_LSR(bus.read(addr)))
+        addr = self.addr_zeropage()
+        self.bus.write(addr, self.do_LSR(self.bus.read(addr)))
         self.cycles += 5
 
     def LSR_zeropage_x(self, opcode):
         addr = self.addr_zeropage_x()
-        bus.write(addr, self.do_LSR(bus.read(addr)))
+        self.bus.write(addr, self.do_LSR(self.bus.read(addr)))
         self.cycles += 6
 
     def LSR_absolute(self, opcode):
         addr = self.addr_absolute()
-        bus.write(addr, self.do_LSR(bus.read(addr)))
+        self.bus.write(addr, self.do_LSR(self.bus.read(addr)))
         self.cycles += 6
 
     def LSR_absolute_x(self, opcode):
         addr = self.addr_absolute_x()
-        bus.write(addr, self.do_LSR(bus.read(addr)))
+        self.bus.write(addr, self.do_LSR(self.bus.read(addr)))
         self.cycles += 7
 
     def BIT_zeropage(self, opcode):

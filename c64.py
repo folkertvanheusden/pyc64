@@ -11,5 +11,11 @@ class cbm64:
     def reset(self):
         self.cpu.reset()
 
+    def run(self):
+        while True:
+            print('%04x' % self.cpu.pc)
+            self.cpu.tick()
+
 c64 = cbm64()
 c64.reset()
+c64.run()
