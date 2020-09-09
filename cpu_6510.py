@@ -186,7 +186,7 @@ class cpu_6510:
     def tick(self):
         old_addr = self.pc
         opcode = self.read_pc()
-        # print('%04x %02x' % (old_addr, opcode))
+        print('%04x %02x' % (old_addr, opcode))
 
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
@@ -836,7 +836,7 @@ class cpu_6510:
 
     def JSR(self, opcode):
         new_addr = self.read_pc_16b()
-        self.push_stack_16b(self.pc - 1)
+        self.push_stack_16b((self.pc - 1) & 0xffff)
         self.pc = new_addr
         self.cycles += 6
 
@@ -874,7 +874,7 @@ class cpu_6510:
         self.cycles += 2
 
     def RTS(self, opcode):
-        self.pc = self.pop_stack_16b() + 1
+        self.pc = (self.pop_stack_16b() + 1) & 0xffff
         self.cycles += 6
 
     def CLD(self, opcode):
@@ -999,7 +999,7 @@ class cpu_6510:
         self.cycles += 7
 
     def LSR_accumulator(self, opcode):
-        a = self.do_LSR(self.a)
+        self.a = self.do_LSR(self.a)
         self.cycles += 2
 
     def LSR_zeropage(self, opcode):
