@@ -285,7 +285,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        # self.disassem(self.pc)
+        #self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -351,7 +351,7 @@ class cpu_6510:
             self.p &= ~self.flags.ZERO
 
     def set_CZN_flags(self, register, value):
-        if value > register:  # CARRY
+        if register >= value:  # CARRY
             self.p |= self.flags.CARRY
         else:
             self.p &= ~self.flags.CARRY
@@ -361,8 +361,8 @@ class cpu_6510:
         else:
             self.p &= ~self.flags.ZERO
 
-        sub = register - value
-        if sub < 0 or sub > 127:  # NEGATIVE
+        sub = (register - value) & 0xff
+        if sub >= 128:  # NEGATIVE
             self.p |= self.flags.NEGATIVE
         else:
             self.p &= ~self.flags.NEGATIVE
@@ -1152,6 +1152,8 @@ class cpu_6510:
 
     def ROL(self, opcode):
         old_carry = self.p & 1
+
+        self.p &= ~self.flags.CARRY
 
         if opcode == 0x2a:
             self.p |= self.a >> 7
