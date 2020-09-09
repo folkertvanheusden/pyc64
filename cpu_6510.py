@@ -176,7 +176,7 @@ class cpu_6510:
 
         self.pc = self.bus.read(0xfffc) | (self.bus.read(0xfffd) << 8)
         self.a = self.x = self.y = 0
-        self.sp = 0
+        self.sp = 0xff
         self.p = 0
 
         self.cycles = 0
