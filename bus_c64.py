@@ -1,6 +1,7 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
 # released under AGPL v3.0
 
+from bus_base import bus_base
 from basic_rom import basic_rom
 from cartridge_hi import cartridge_hi
 from cartridge_lo import cartridge_lo
@@ -10,7 +11,7 @@ from kernal_rom import kernal_rom
 from nothing import nothing
 from ram import ram
 
-class bus:
+class bus_c64(bus_base):
     def __init__(self):
         self.basic_rom = basic_rom()
         self.cartridge_hi = cartridge_hi()

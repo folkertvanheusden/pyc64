@@ -1,5 +1,3 @@
-from bus import bus
-
 class cpu_6510:
     def __init__(self, bus):
         self.bus = bus
