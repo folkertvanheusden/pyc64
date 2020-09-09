@@ -391,12 +391,16 @@ class cpu_6510:
 
     def do_ADC(self, value):
         olda = self.a
-        self.a += value + (self.p & 1)
+        value += self.p & 1
+        self.a += value
         self.p &= ~(1 | 64);  # clear carry and sign
+
         if self.a > 255:
-            self.p |= 1;  # carry flag if not fit in 8 bit
-        if olda < 128 and (self.a & 0xff) >= 128:
-            self.p |= 64;  # sign -> v
+            self.p |= 1
+
+        if (olda ^ self.a) & (value ^ self.a) & 0x80:
+            self.p |= 64
+
         self.a &= 0xff
         self.set_NZ_flags(self.a)
 
@@ -404,10 +408,13 @@ class cpu_6510:
         olda = self.a
         self.a -= value + 1 - (self.p & 1)
         self.p &= ~(1 | 64);  # clear carry and sign
-        if self.a < 0:
-            self.p |= 1;  # carry flag if not fit in 8 bit
-        if olda < 128 and (self.a & 0xff) >= 128:
-            self.p |= 64;  # sign -> v
+
+        if self.a > 255:
+            self.p |= 1
+
+        if (olda ^ self.a) & (value ^ self.a) & 0x80:
+            self.p |= 64
+
         self.a &= 0xff
         self.set_NZ_flags(self.a)
 
@@ -1040,6 +1047,7 @@ class cpu_6510:
         if opcode == 0x2a:
             self.p |= self.a >> 7
             self.a <<= 1
+            self.a &= 255
             self.a |= old_carry
 
         elif opcode == 0x26 or opcode == 0x36:
@@ -1047,6 +1055,7 @@ class cpu_6510:
             val = self.bus.read(zp_addr)
             self.p |= val >> 7
             val <<= 1
+            val &= 255
             val |= old_carry
             self.bus.write(zp_addr, val)
 
@@ -1055,6 +1064,7 @@ class cpu_6510:
             val = self.bus.read(zp_addr)
             self.p |= val >> 7
             val <<= 1
+            val &= 255
             val |= old_carry
             self.bus.write(zp_addr, val)
 
