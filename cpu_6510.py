@@ -181,10 +181,94 @@ class cpu_6510:
 
         self.cycles = 0
 
+    def disassem(self, addr):
+        opcode = self.bus.read(addr)
+        par8 = self.bus.read(addr + 1)
+        par16 = par8 | (self.bus.read(addr + 2) << 8)
+        if par8 >= 128:
+            rel_addr = addr + 2 - (256 - par8)
+        else:
+            rel_addr = addr + 2 + par8
+
+        if opcode == 0x00:
+            print('%04x BRK' % addr)
+
+        elif opcode == 0x01:
+            print('%04x ORA(#%02x, X)' % (addr, par8))
+
+        elif opcode == 0x10:
+            print('%04x BPL $%04x' % (addr, rel_addr))
+
+        elif opcode == 0x18:
+            print('%04x CLC' % addr)
+
+        elif opcode == 0x49:
+            print('%04x EOR #%02x' % (addr, par8))
+
+        elif opcode == 0x4c:
+            print('%04x JMP $%04x' % (addr, par16))
+
+        elif opcode == 0x69:
+            print('%04x ADC #%02x' % (addr, par8))
+
+        elif opcode == 0x88:
+            print('%04x DEY' % addr)
+
+        elif opcode == 0x8d:
+            print('%04x STA $%04x' % (addr, par16))
+
+        elif opcode == 0x90:
+            print('%04x BCC $%04x' % (addr, rel_addr))
+
+        elif opcode == 0x98:
+            print('%04x TYA' % addr)
+
+        elif opcode == 0x9a:
+            print('%04x TXS' % addr)
+
+        elif opcode == 0xa0:
+            print('%04x LDY #%02x' % (addr, par8))
+
+        elif opcode == 0xa2:
+            print('%04x LDX #%02x' % (addr, par8))
+
+        elif opcode == 0xa9:
+            print('%04x LDA #%02x' % (addr, par8))
+
+        elif opcode == 0xaa:
+            print('%04x TAX' % addr)
+
+        elif opcode == 0xad:
+            print('%04x LDA $%04x' % (addr, par16))
+
+        elif opcode == 0xc0:
+            print('%04x CPY #%02x' % (addr, par8))
+
+        elif opcode == 0xc9:
+            print('%04x CMP #%02x' % (addr, par8))
+
+        elif opcode == 0xca:
+            print('%04x DEX' % addr)
+
+        elif opcode == 0xd0:
+            print('%04x BNE $%04x' % (addr, rel_addr))
+
+        elif opcode == 0xd8:
+            print('%04x CLD' % addr)
+
+        elif opcode == 0xea:
+            print('%04x NOP' % addr)
+
+        elif opcode == 0xf0:
+            print('%04x BEQ $%04x' % (addr, rel_addr))
+
+        else:
+            print('%04x %02x' % (addr, opcode))
+
     def tick(self):
-        old_addr = self.pc
+        self.disassem(self.pc)
+
         opcode = self.read_pc()
-        print('%04x %02x' % (old_addr, opcode))
 
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
