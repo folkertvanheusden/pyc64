@@ -194,6 +194,13 @@ class cpu_6510:
             print('UNKNOWN OPCODE ^')
             assert False
 
+        assert self.pc >= 0x0000 and self.pc < 0x10000
+        assert self.a >= 0 and self.a < 256
+        assert self.x >= 0 and self.x < 256
+        assert self.y >= 0 and self.y < 256
+        assert self.sp >= 0 and self.sp < 256
+        assert self.p >= 0 and self.p < 256
+
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
         self.sp -= 1
@@ -395,8 +402,7 @@ class cpu_6510:
 
     def do_SBC(self, value):
         olda = self.a
-        self.a -= value
-        self.a -= ~(self.p & 1)
+        self.a -= value + 1 - (self.p & 1)
         self.p &= ~(1 | 64);  # clear carry and sign
         if self.a < 0:
             self.p |= 1;  # carry flag if not fit in 8 bit
