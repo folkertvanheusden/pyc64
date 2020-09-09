@@ -1,7 +1,5 @@
 from enum import IntFlag
 
-import sys  # FIXME
-
 class cpu_6510:
     class flags(IntFlag):
         CARRY     = 0x01
@@ -431,9 +429,7 @@ class cpu_6510:
         return addr3
 
     def data_indirect_y(self):
-        addr = self.addr_indirect_y()
-        data = self.bus.read(addr)
-        return data
+        return self.bus.read(self.addr_indirect_y())
 
     def data_zeropage(self):
         addr = self.addr_zeropage()
@@ -1165,13 +1161,17 @@ class cpu_6510:
     def ROL(self, opcode):
         old_carry = self.p & 1
 
-        self.p &= ~self.flags.CARRY
+        self.p &= ~(self.flags.CARRY | self.flags.NEGATIVE | self.flags.ZERO)
 
         if opcode == 0x2a:
             self.p |= self.a >> 7
             self.a <<= 1
             self.a &= 255
             self.a |= old_carry
+            if self.a & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif self.a == 0x00:
+                self.p |= self.flags.ZERO
 
         elif opcode == 0x26 or opcode == 0x36:
             zp_addr = self.addr_zeropage() if opcode == 0x26 else self.addr_zeropage_x()
@@ -1180,6 +1180,10 @@ class cpu_6510:
             val <<= 1
             val &= 255
             val |= old_carry
+            if val & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif val == 0x00:
+                self.p |= self.flags.ZERO
             self.bus.write(zp_addr, val)
 
         elif opcode == 0x2e or opcode == 0x3e:
@@ -1189,6 +1193,10 @@ class cpu_6510:
             val <<= 1
             val &= 255
             val |= old_carry
+            if val & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif val == 0x00:
+                self.p |= self.flags.ZERO
             self.bus.write(zp_addr, val)
 
         else:
