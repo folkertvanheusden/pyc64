@@ -68,6 +68,7 @@ class cpu_6510:
         self.opcodes[0x4c] = self.JMP_absolute
         self.opcodes[0x4d] = self.EOR_absolute
         self.opcodes[0x4e] = self.LSR_absolute
+        self.opcodes[0x50] = self.BVC
         self.opcodes[0x51] = self.EOR_indirect_y
         self.opcodes[0x54] = self.NOP_zeropage_x
         self.opcodes[0x55] = self.EOR_zeropage_x
@@ -86,6 +87,7 @@ class cpu_6510:
         self.opcodes[0x69] = self.ADC_immediate
         self.opcodes[0x6c] = self.JMP_absolute_indirect
         self.opcodes[0x6d] = self.ADC_absolute
+        self.opcodes[0x70] = self.BVS
         self.opcodes[0x71] = self.ADC_indirect_y
         self.opcodes[0x74] = self.NOP_zeropage_x
         self.opcodes[0x75] = self.ADC_zeropage_x
@@ -497,6 +499,12 @@ class cpu_6510:
 
     def BPL(self, opcode):
         self.do_Bxx(128, 0)
+
+    def BVC(self, opcode):
+        self.do_Bxx(self.flags.OVERFLOW, 0)
+
+    def BVS(self, opcode):
+        self.do_Bxx(self.flags.OVERFLOW, self.flags.OVERFLOW)
 
     def do_ADC(self, value):
         olda = self.a
