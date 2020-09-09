@@ -235,21 +235,19 @@ class cpu_6510:
     def set_NZ_flags(self, result_value):
         if result_value > 127:  # NEGATIVE
             self.p |= 128
-
         else:
             self.p &= ~128
 
         if result_value == 0:  # ZERO
             self.p |= 2
-
         else:
             self.p &= ~2
 
     def set_CZN_flags(self, register, value):
         if value > register:  # CARRY
-            self.p &= ~1
-        else:
             self.p |= 1
+        else:
+            self.p &= ~1
 
         if value == register:  # ZERO
             self.p |= 2
@@ -409,7 +407,7 @@ class cpu_6510:
         self.a -= value + 1 - (self.p & 1)
         self.p &= ~(1 | 64);  # clear carry and sign
 
-        if self.a > 255:
+        if self.a < 0:
             self.p |= 1
 
         if (olda ^ self.a) & (value ^ self.a) & 0x80:
