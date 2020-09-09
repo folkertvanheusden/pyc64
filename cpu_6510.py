@@ -210,7 +210,7 @@ class cpu_6510:
             print('BRK')
 
         elif opcode == 0x01:
-            print('ORA(#%02x, X)' % par8)
+            print('ORA(#$%02x, X)' % par8)
 
         elif opcode == 0x10:
             print('BPL $%04x' % rel_addr)
@@ -219,13 +219,16 @@ class cpu_6510:
             print('CLC')
 
         elif opcode == 0x49:
-            print('EOR #%02x' % par8)
+            print('EOR #$%02x' % par8)
 
         elif opcode == 0x4c:
             print('JMP $%04x' % par16)
 
         elif opcode == 0x69:
-            print('ADC #%02x' % par8)
+            print('ADC #$%02x' % par8)
+
+        elif opcode == 0x85:
+            print('STA $%02x' % par8)
 
         elif opcode == 0x88:
             print('DEY')
@@ -243,13 +246,16 @@ class cpu_6510:
             print('TXS')
 
         elif opcode == 0xa0:
-            print('LDY #%02x' % par8)
+            print('LDY #$%02x' % par8)
 
         elif opcode == 0xa2:
-            print('LDX #%02x' % par8)
+            print('LDX #$%02x' % par8)
+
+        elif opcode == 0xa5:
+            print('LDA $%02x' % par8)
 
         elif opcode == 0xa9:
-            print('LDA #%02x' % par8)
+            print('LDA #$%02x' % par8)
 
         elif opcode == 0xaa:
             print('TAX')
@@ -258,10 +264,10 @@ class cpu_6510:
             print('LDA $%04x' % par16)
 
         elif opcode == 0xc0:
-            print('CPY #%02x' % par8)
+            print('CPY #$%02x' % par8)
 
         elif opcode == 0xc9:
-            print('CMP #%02x' % par8)
+            print('CMP #$%02x' % par8)
 
         elif opcode == 0xca:
             print('DEX')
@@ -273,7 +279,7 @@ class cpu_6510:
             print('CLD')
 
         elif opcode == 0xe9:
-            print('SBC #%02x' % par8)
+            print('SBC #$%02x' % par8)
 
         elif opcode == 0xea:
             print('NOP')
@@ -285,7 +291,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        #self.disassem(self.pc)
+        self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
