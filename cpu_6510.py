@@ -547,11 +547,13 @@ class cpu_6510:
         return value
 
     def do_BIT(self, value):
+        self.p &= ~192
         self.p |= value & 192
+
         if (self.a & value) == 0:
-            self.p |= 2
+            self.p |= self.flags.ZERO
         else:
-            self.p &= ~2
+            self.p &= ~self.flags.ZERO
 
     def LDA_immediate(self, opcode):
         self.a = self.read_pc()
@@ -1146,9 +1148,11 @@ class cpu_6510:
 
     def BIT_zeropage(self, opcode):
         self.do_BIT(self.data_zeropage())
+        self.cycles += 3
 
     def BIT_absolute(self, opcode):
         self.do_BIT(self.data_absolute())
+        self.cycles += 4
 
     def ROL(self, opcode):
         old_carry = self.p & 1
