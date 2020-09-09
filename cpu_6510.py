@@ -1,4 +1,18 @@
+from enum import IntFlag
+
+import sys  # FIXME
+
 class cpu_6510:
+    class flags(IntFlag):
+        CARRY     = 0x01
+        ZERO      = 0x02
+        INTERRUPT = 0x04
+        DECIMAL   = 0x08
+        BREAK     = 0x10
+        UNUSED    = 0x20
+        OVERFLOW  = 0x40
+        NEGATIVE  = 0x80
+
     def __init__(self, bus):
         self.bus = bus
 
@@ -190,90 +204,101 @@ class cpu_6510:
         else:
             rel_addr = addr + 2 + par8
 
+        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p), end='')
+
         if opcode == 0x00:
-            print('%04x BRK' % addr)
+            print('BRK')
 
         elif opcode == 0x01:
-            print('%04x ORA(#%02x, X)' % (addr, par8))
+            print('ORA(#%02x, X)' % par8)
 
         elif opcode == 0x10:
-            print('%04x BPL $%04x' % (addr, rel_addr))
+            print('BPL $%04x' % rel_addr)
 
         elif opcode == 0x18:
-            print('%04x CLC' % addr)
+            print('CLC')
 
         elif opcode == 0x49:
-            print('%04x EOR #%02x' % (addr, par8))
+            print('EOR #%02x' % par8)
 
         elif opcode == 0x4c:
-            print('%04x JMP $%04x' % (addr, par16))
+            print('JMP $%04x' % par16)
 
         elif opcode == 0x69:
-            print('%04x ADC #%02x' % (addr, par8))
+            print('ADC #%02x' % par8)
 
         elif opcode == 0x88:
-            print('%04x DEY' % addr)
+            print('DEY')
 
         elif opcode == 0x8d:
-            print('%04x STA $%04x' % (addr, par16))
+            print('STA $%04x' % par16)
 
         elif opcode == 0x90:
-            print('%04x BCC $%04x' % (addr, rel_addr))
+            print('BCC $%04x' % rel_addr)
 
         elif opcode == 0x98:
-            print('%04x TYA' % addr)
+            print('TYA')
 
         elif opcode == 0x9a:
-            print('%04x TXS' % addr)
+            print('TXS')
 
         elif opcode == 0xa0:
-            print('%04x LDY #%02x' % (addr, par8))
+            print('LDY #%02x' % par8)
 
         elif opcode == 0xa2:
-            print('%04x LDX #%02x' % (addr, par8))
+            print('LDX #%02x' % par8)
 
         elif opcode == 0xa9:
-            print('%04x LDA #%02x' % (addr, par8))
+            print('LDA #%02x' % par8)
 
         elif opcode == 0xaa:
-            print('%04x TAX' % addr)
+            print('TAX')
 
         elif opcode == 0xad:
-            print('%04x LDA $%04x' % (addr, par16))
+            print('LDA $%04x' % par16)
 
         elif opcode == 0xc0:
-            print('%04x CPY #%02x' % (addr, par8))
+            print('CPY #%02x' % par8)
 
         elif opcode == 0xc9:
-            print('%04x CMP #%02x' % (addr, par8))
+            print('CMP #%02x' % par8)
 
         elif opcode == 0xca:
-            print('%04x DEX' % addr)
+            print('DEX')
 
         elif opcode == 0xd0:
-            print('%04x BNE $%04x' % (addr, rel_addr))
+            print('BNE $%04x' % rel_addr)
 
         elif opcode == 0xd8:
-            print('%04x CLD' % addr)
+            print('CLD')
+
+        elif opcode == 0xe9:
+            print('SBC #%02x' % par8)
 
         elif opcode == 0xea:
-            print('%04x NOP' % addr)
+            print('NOP')
 
         elif opcode == 0xf0:
-            print('%04x BEQ $%04x' % (addr, rel_addr))
+            print('BEQ $%04x' % rel_addr)
 
         else:
-            print('%04x %02x' % (addr, opcode))
+            print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        # self.disassem(self.pc)
 
+        prev_flags = self.p;
         opcode = self.read_pc()
 
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
+
+            # if prev_flags != self.p:
+            #     print('new flags: %02x' % self.p)
+
         else:
-            print('UNKNOWN OPCODE ^')
+            print('UNKNOWN OPCODE')
+            self.disassem(self.pc - 1)
             assert False
 
         assert self.pc >= 0x0000 and self.pc < 0x10000
@@ -316,31 +341,31 @@ class cpu_6510:
 
     def set_NZ_flags(self, result_value):
         if result_value > 127:  # NEGATIVE
-            self.p |= 128
+            self.p |= self.flags.NEGATIVE
         else:
-            self.p &= ~128
+            self.p &= ~self.flags.NEGATIVE
 
         if result_value == 0:  # ZERO
-            self.p |= 2
+            self.p |= self.flags.ZERO
         else:
-            self.p &= ~2
+            self.p &= ~self.flags.ZERO
 
     def set_CZN_flags(self, register, value):
         if value > register:  # CARRY
-            self.p |= 1
+            self.p |= self.flags.CARRY
         else:
-            self.p &= ~1
+            self.p &= ~self.flags.CARRY
 
         if value == register:  # ZERO
-            self.p |= 2
+            self.p |= self.flags.ZERO
         else:
-            self.p &= ~2
+            self.p &= ~self.flags.ZERO
 
         sub = register - value
         if sub < 0 or sub > 127:  # NEGATIVE
-            self.p |= 128
+            self.p |= self.flags.NEGATIVE
         else:
-            self.p &= ~128
+            self.p &= ~self.flags.NEGATIVE
 
     def read16b(self, addr):
         return self.bus.read(addr) | (self.bus.read((addr + 1) & 0xffff) << 8)
@@ -471,12 +496,12 @@ class cpu_6510:
 
     def do_ADC(self, value):
         olda = self.a
-        value += self.p & 1
+        value += self.p & self.flags.CARRY
         self.a += value
-        self.p &= ~(1 | 64);  # clear carry and sign
+        self.p &= ~(self.flags.CARRY | 64);  # clear carry and sign
 
         if self.a > 255:
-            self.p |= 1
+            self.p |= self.flags.CARRY
 
         if (olda ^ self.a) & (value ^ self.a) & 0x80:
             self.p |= 64
@@ -485,18 +510,22 @@ class cpu_6510:
         self.set_NZ_flags(self.a)
 
     def do_SBC(self, value):
+        print('GREP', self.a, value, self.p & self.flags.CARRY)
         olda = self.a
-        self.a -= value + 1 - (self.p & 1)
-        self.p &= ~(1 | 64);  # clear carry and sign
+        value += 0 if self.p & self.flags.CARRY else 1
+        print(' GREP value:', value)
+        self.a -= value
+        self.p &= ~(self.flags.CARRY | 64);  # clear carry and sign
 
         if self.a < 0:
-            self.p |= 1
+            self.p |= self.flags.CARRY
 
         if (olda ^ self.a) & (value ^ self.a) & 0x80:
             self.p |= 64
 
         self.a &= 0xff
         self.set_NZ_flags(self.a)
+        print(' GREP results in', self.a)
 
     def do_ASL(self, value):
         if value & 128:
@@ -1019,7 +1048,7 @@ class cpu_6510:
         self.cycles += 2
 
     def SBC_immediate(self, opcode):
-        self.do_ADC(self.read_pc())
+        self.do_SBC(self.read_pc())
         self.cycles += 2
 
     def SBC_zeropage(self, opcode):
