@@ -291,7 +291,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        # self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -445,14 +445,16 @@ class cpu_6510:
 
     def addr_zeropage_x(self):
         addr = self.read_pc()
-        return (addr + self.x) & 0xffff
+        # http://www.obelisk.me.uk/6502/addressing.html#ZPX
+        return (addr + self.x) & 0xff
 
     def data_zeropage_x(self):
         return self.bus.read(self.addr_zeropage_x())
 
     def addr_zeropage_y(self):
         addr = self.read_pc()
-        return (addr + self.y) & 0xffff
+        # same as addr_zeropage_x ?
+        return (addr + self.y) & 0xff
 
     def data_zeropage_y(self):
         return self.bus.read(self.addr_zeropage_y())
