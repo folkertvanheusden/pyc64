@@ -10,6 +10,7 @@ from i_o import i_o
 from kernal_rom import kernal_rom
 from nothing import nothing
 from ram import ram
+import sys
 
 class bus_c64(bus_base):
     def __init__(self):
@@ -87,7 +88,7 @@ class bus_c64(bus_base):
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
-            print('%c' % value, end='', flush=True)
+            print('%c' % value, end='', flush=True, file=sys.stderr)
 
         zone = self.zones[addr // 4096]
         device = self.bank_table[self.bs_setting][zone]
