@@ -198,6 +198,12 @@ class cpu_6510:
 
         self.cycles = 0
 
+    def IRQ(self):
+        if (self.p & self.flags.INTERRUPT) == 0:
+            self.push_stack_16b(self.pc)
+            self.push_stack(self.p | (1 << 5) | (1 << 4))
+            self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
+
     def disassem(self, addr):
         opcode = self.bus.read(addr)
         par8 = self.bus.read(addr + 1)
