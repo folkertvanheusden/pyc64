@@ -58,7 +58,8 @@ class cpu_6510:
         self.opcodes[0x3A] = self.NOP
         self.opcodes[0x3C] = self.NOP_absolute
         self.opcodes[0x3d] = self.AND_absolute_x
-        self.opcodes[0xee] = self.ROL
+        self.opcodes[0x3e] = self.ROL
+        self.opcodes[0x40] = self.RTI
         self.opcodes[0x41] = self.EOR_indirect_x
         self.opcodes[0x44] = self.NOP_zeropage
         self.opcodes[0x45] = self.EOR_zeropage
@@ -180,6 +181,7 @@ class cpu_6510:
         self.opcodes[0xF4] = self.NOP_zeropage_x
         self.opcodes[0xf5] = self.SBC_zeropage_x
         self.opcodes[0xf6] = self.INC_zeropage_x
+        self.opcodes[0xf8] = self.SED
         self.opcodes[0xf9] = self.SBC_absolute_y
         self.opcodes[0xFA] = self.NOP
         self.opcodes[0xFC] = self.NOP_absolute_x
@@ -221,6 +223,9 @@ class cpu_6510:
 
         elif opcode == 0x18:
             print('CLC')
+
+        elif opcode == 0x40:
+            print('RTI')
 
         elif opcode == 0x49:
             print('EOR #$%02x' % par8)
@@ -305,6 +310,9 @@ class cpu_6510:
 
         elif opcode == 0xf0:
             print('BEQ $%04x' % rel_addr)
+
+        elif opcode == 0xea:
+            print('NOP')
 
         else:
             print('%02x' % opcode)
@@ -602,6 +610,13 @@ class cpu_6510:
         self.p |= self.flags.INTERRUPT
 
         self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
+
+        self.cycles += 7
+
+    def RTI(self, opcode):
+        self.p = self.pop_stack()
+        self.pc = self.pop_stack_16b()
+        self.cycles += 6
 
     def LDA_immediate(self, opcode):
         self.a = self.read_pc()
@@ -1208,6 +1223,8 @@ class cpu_6510:
     def ROL(self, opcode):
         old_carry = self.p & 1
 
+        # FIXME cycles
+
         self.p &= ~(self.flags.CARRY | self.flags.NEGATIVE | self.flags.ZERO)
 
         if opcode == 0x2a:
@@ -1248,3 +1265,7 @@ class cpu_6510:
 
         else:
             assert False
+
+    def SED(self, opcode):
+        self.p |= self.flags.DECIMAL
+        self.cycles += 2
