@@ -15,6 +15,7 @@ class cpu_6510:
         self.bus = bus
 
         self.opcodes = [ None ] * 256
+        self.opcodes[0x00] = self.BRK
         self.opcodes[0x01] = self.ORA_indirect_x
         self.opcodes[0x04] = self.NOP_zeropage
         self.opcodes[0x05] = self.ORA_zeropage
@@ -566,6 +567,22 @@ class cpu_6510:
             self.p |= self.flags.ZERO
         else:
             self.p &= ~self.flags.ZERO
+
+    def BRK(self, opcode):
+        # https://www.pagetable.com/?p=410
+        # http://nesdev.com/the%20%27B%27%20flag%20&%20BRK%20instruction.txt
+        self.read_pc()  # padding(!)
+
+        self.push_stack_16b(self.pc)
+
+        work = self.p
+        work |= 1 << 4  # B flag
+
+        self.push_stack(work)
+
+        self.p |= self.flags.INTERRUPT
+
+        self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
     def LDA_immediate(self, opcode):
         self.a = self.read_pc()
