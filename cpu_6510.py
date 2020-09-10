@@ -205,13 +205,16 @@ class cpu_6510:
         else:
             rel_addr = addr + 2 + par8
 
-        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p), end='')
+        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100), end='')
 
         if opcode == 0x00:
             print('BRK')
 
         elif opcode == 0x01:
             print('ORA(#$%02x, X)' % par8)
+
+        elif opcode == 0x08:
+            print('PHP')
 
         elif opcode == 0x10:
             print('BPL $%04x' % rel_addr)
@@ -228,8 +231,14 @@ class cpu_6510:
         elif opcode == 0x69:
             print('ADC #$%02x' % par8)
 
+        elif opcode == 0x84:
+            print('STY $%02x' % par8)
+
         elif opcode == 0x85:
             print('STA $%02x' % par8)
+
+        elif opcode == 0x86:
+            print('STX $%02x' % par8)
 
         elif opcode == 0x88:
             print('DEY')
@@ -264,6 +273,12 @@ class cpu_6510:
         elif opcode == 0xad:
             print('LDA $%04x' % par16)
 
+        elif opcode == 0xba:
+            print('TSX')
+
+        elif opcode == 0xbd:
+            print('LDA ($%04x,X)' % par16)
+
         elif opcode == 0xc0:
             print('CPY #$%02x' % par8)
 
@@ -278,6 +293,9 @@ class cpu_6510:
 
         elif opcode == 0xd8:
             print('CLD')
+
+        elif opcode == 0xe0:
+            print('CPX #$%02x' % par8)
 
         elif opcode == 0xe9:
             print('SBC #$%02x' % par8)
@@ -577,6 +595,7 @@ class cpu_6510:
 
         work = self.p
         work |= 1 << 4  # B flag
+        work |= 1 << 5
 
         self.push_stack(work)
 
