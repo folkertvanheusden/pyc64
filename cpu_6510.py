@@ -85,19 +85,24 @@ class cpu_6510:
         self.opcodes[0x61] = self.ADC_indirect_x
         self.opcodes[0x64] = self.NOP_zeropage
         self.opcodes[0x65] = self.ADC_zeropage
+        self.opcodes[0x66] = self.ROR
         self.opcodes[0x68] = self.PLA
         self.opcodes[0x69] = self.ADC_immediate
+        self.opcodes[0x6a] = self.ROR
         self.opcodes[0x6c] = self.JMP_absolute_indirect
         self.opcodes[0x6d] = self.ADC_absolute
+        self.opcodes[0x6e] = self.ROR
         self.opcodes[0x70] = self.BVS
         self.opcodes[0x71] = self.ADC_indirect_y
         self.opcodes[0x74] = self.NOP_zeropage_x
         self.opcodes[0x75] = self.ADC_zeropage_x
+        self.opcodes[0x76] = self.ROR
         self.opcodes[0x78] = self.SEI
         self.opcodes[0x79] = self.ADC_absolute_y
         self.opcodes[0x7A] = self.NOP
         self.opcodes[0x7C] = self.NOP_absolute
         self.opcodes[0x7d] = self.ADC_absolute_x
+        self.opcodes[0x7e] = self.ROR
         self.opcodes[0x80] = self.NOP_immediate
         self.opcodes[0x81] = self.ST_indirect_x
         self.opcodes[0x82] = self.NOP_immediate
@@ -240,6 +245,9 @@ class cpu_6510:
         elif opcode == 0x4c:
             print('JMP $%04x' % par16)
 
+        elif opcode == 0x66:
+            print('ROR $%02x' % par8)
+
         elif opcode == 0x68:
             print('PLA')
 
@@ -300,6 +308,9 @@ class cpu_6510:
         elif opcode == 0xc0:
             print('CPY #$%02x' % par8)
 
+        elif opcode == 0xc5:
+            print('CMP $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
+
         elif opcode == 0xc9:
             print('CMP #$%02x' % par8)
 
@@ -337,7 +348,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        # self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -561,29 +572,26 @@ class cpu_6510:
         if self.a > 255:
             self.p |= self.flags.CARRY
 
-        if (olda ^ self.a) & (value ^ self.a) & 0x80:
+        if not ((olda ^ value) & 0x80) and ((olda ^ self.a) & 0x80):
             self.p |= 64
 
         self.a &= 0xff
         self.set_NZ_flags(self.a)
 
     def do_SBC(self, value):
-        print('GREP', self.a, value, self.p & self.flags.CARRY)
         olda = self.a
         value += 0 if self.p & self.flags.CARRY else 1
-        print(' GREP value:', value)
         self.a -= value
         self.p &= ~(self.flags.CARRY | 64);  # clear carry and sign
 
         if self.a < 0:
             self.p |= self.flags.CARRY
 
-        if (olda ^ self.a) & (value ^ self.a) & 0x80:
+        if ((olda ^ self.a) & 0x80) and ((olda ^ value) & 0x80):
             self.p |= 64
 
         self.a &= 0xff
         self.set_NZ_flags(self.a)
-        print(' GREP results in', self.a)
 
     def do_ASL(self, value):
         if value & 128:
@@ -1285,6 +1293,49 @@ class cpu_6510:
             val <<= 1
             val &= 255
             val |= old_carry
+            if val & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif val == 0x00:
+                self.p |= self.flags.ZERO
+            self.bus.write(zp_addr, val)
+
+        else:
+            assert False
+
+    def ROR(self, opcode):
+        old_carry = self.p & 1
+
+        # FIXME cycles
+
+        self.p &= ~(self.flags.CARRY | self.flags.NEGATIVE | self.flags.ZERO)
+
+        if opcode == 0x6a:
+            self.p |= self.a & 1
+            self.a >>= 1
+            self.a |= old_carry << 7
+            if self.a & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif self.a == 0x00:
+                self.p |= self.flags.ZERO
+
+        elif opcode == 0x66 or opcode == 0x76:
+            zp_addr = self.addr_zeropage() if opcode == 0x66 else self.addr_zeropage_x()
+            val = self.bus.read(zp_addr)
+            self.p |= val & 1
+            val >>= 1
+            val |= old_carry << 7
+            if val & 0x80:
+                self.p |= self.flags.NEGATIVE
+            elif val == 0x00:
+                self.p |= self.flags.ZERO
+            self.bus.write(zp_addr, val)
+
+        elif opcode == 0x6e or opcode == 0x7e:
+            zp_addr = self.addr_absolute() if opcode == 0x6e else self.addr_absolute_x()
+            val = self.bus.read(zp_addr)
+            self.p |= val & 1
+            val >>= 1
+            val |= old_carry << 7
             if val & 0x80:
                 self.p |= self.flags.NEGATIVE
             elif val == 0x00:
