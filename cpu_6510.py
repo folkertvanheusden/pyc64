@@ -291,7 +291,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        # self.disassem(self.pc)
+        self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -1094,7 +1094,10 @@ class cpu_6510:
         self.cycles += 5
 
     def PHP(self, opcode):
-        self.push_stack(self.p)
+        work = self.p
+        work |= 1 << 5
+        work |= 1 << 4
+        self.push_stack(work)
         self.cycles += 3
 
     def PHA(self, opcode):
