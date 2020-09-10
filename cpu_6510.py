@@ -136,6 +136,7 @@ class cpu_6510:
         self.opcodes[0xb4] = self.LDY_zeropage_x
         self.opcodes[0xb5] = self.LDA_zeropage_x
         self.opcodes[0xb6] = self.LDX_zeropage_y
+        self.opcodes[0xb8] = self.CLV
         self.opcodes[0xb9] = self.LDA_absolute_y
         self.opcodes[0xba] = self.TSX
         self.opcodes[0xbc] = self.LDY_absolute_x
@@ -796,7 +797,7 @@ class cpu_6510:
             register = self.a
         elif opcode == 0xec:
             register = self.x
-        elif opcode == 0xc4:
+        elif opcode == 0xcc:
             register = self.y
         else:
             assert False
@@ -1076,6 +1077,10 @@ class cpu_6510:
 
     def CLC(self, opcode):
         self.p &= ~1
+        self.cycles += 2
+
+    def CLV(self, opcode):
+        self.p &= ~self.flags.OVERFLOW
         self.cycles += 2
 
     def ADC_immediate(self, opcode):
