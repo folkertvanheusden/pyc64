@@ -240,6 +240,9 @@ class cpu_6510:
         elif opcode == 0x4c:
             print('JMP $%04x' % par16)
 
+        elif opcode == 0x68:
+            print('PLA')
+
         elif opcode == 0x69:
             print('ADC #$%02x' % par8)
 
@@ -285,6 +288,9 @@ class cpu_6510:
         elif opcode == 0xad:
             print('LDA $%04x' % par16)
 
+        elif opcode == 0xb5:
+            print('LDA $%02x,X' % par8)
+
         elif opcode == 0xba:
             print('TSX')
 
@@ -303,8 +309,14 @@ class cpu_6510:
         elif opcode == 0xd0:
             print('BNE $%04x' % rel_addr)
 
+        elif opcode == 0xd5:
+            print('CMP $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read((par8 + self.x) & 0xff)))
+
         elif opcode == 0xd8:
             print('CLD')
+
+        elif opcode == 0xdd:
+            print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read((par16 + self.x) & 0xffff)))
 
         elif opcode == 0xe0:
             print('CPX #$%02x' % par8)
