@@ -741,7 +741,12 @@ class cpu_6510:
         self.cycles += 3
 
     def ST_zeropage_x(self, opcode):
-        self.bus.write(self.addr_zeropage_x(), self.y)
+        if opcode == 0x94:
+            self.bus.write(self.addr_zeropage_x(), self.y)
+        elif opcode == 0x95:
+            self.bus.write(self.addr_zeropage_x(), self.a)
+        else:
+            assert False
         self.cycles += 4
 
     def ST_zeropage_y(self, opcode):
