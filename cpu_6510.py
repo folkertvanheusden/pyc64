@@ -184,13 +184,13 @@ class cpu_6510:
         self.opcodes[0xee] = self.INC_absolute
         self.opcodes[0xf0] = self.BEQ
         self.opcodes[0xf1] = self.SBC_indirect_y
-        self.opcodes[0xF4] = self.NOP_zeropage_x
+        self.opcodes[0xf4] = self.NOP_zeropage_x
         self.opcodes[0xf5] = self.SBC_zeropage_x
         self.opcodes[0xf6] = self.INC_zeropage_x
         self.opcodes[0xf8] = self.SED
         self.opcodes[0xf9] = self.SBC_absolute_y
-        self.opcodes[0xFA] = self.NOP
-        self.opcodes[0xFC] = self.NOP_absolute_x
+        self.opcodes[0xfa] = self.NOP
+        self.opcodes[0xfc] = self.NOP_absolute_x
         self.opcodes[0xfd] = self.SBC_absolute_x
         self.opcodes[0xfe] = self.INC_absolute_x
 
@@ -221,6 +221,7 @@ class cpu_6510:
 
         bs = self.bus.read(0x0001)
 
+        idx_x = self.read16b((par8 + self.x) & 0xff)
         idx_y = (self.read16b(par8) + self.y) & 0xffff
 
         print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
@@ -279,6 +280,9 @@ class cpu_6510:
         elif opcode == 0x60:
             print('RTS')
 
+        elif opcode == 0x61:
+            print('ADC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
+
         elif opcode == 0x65:
             print('ADC $%02x\t[%02x]' % (par8, self.bus.read(par8)))
 
@@ -293,6 +297,9 @@ class cpu_6510:
 
         elif opcode == 0x6c:
             print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
+
+        elif opcode == 0x71:
+            print('ADC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0x7d:
             addr = (par16 + self.x) & 0xffff
@@ -414,6 +421,9 @@ class cpu_6510:
 
         elif opcode == 0xf0:
             print('BEQ $%04x' % rel_addr)
+
+        elif opcode == 0xf1:
+            print('SBC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0xea:
             print('NOP')
