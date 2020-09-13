@@ -172,7 +172,7 @@ class cpu_6510:
         self.opcodes[0xde] = self.DEC_absolute_x
         self.opcodes[0xe0] = self.CMP_immediate
         self.opcodes[0xe1] = self.SBC_indirect_x
-        self.opcodes[0xE2] = self.NOP_immediate
+        self.opcodes[0xe2] = self.NOP_immediate
         self.opcodes[0xe4] = self.CMP_zeropage
         self.opcodes[0xe5] = self.SBC_zeropage
         self.opcodes[0xe6] = self.INC_zeropage
@@ -221,13 +221,15 @@ class cpu_6510:
 
         bs = self.bus.read(0x0001)
 
+        idx_y = (self.read16b(par8) + self.y) & 0xffff
+
         print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
 
         if opcode == 0x00:
             print('BRK')
 
         elif opcode == 0x01:
-            print('ORA(#$%02x, X)' % par8)
+            print('ORA (#$%02x,X)' % par8)
 
         elif opcode == 0x08:
             print('PHP')
@@ -288,6 +290,9 @@ class cpu_6510:
 
         elif opcode == 0x90:
             print('BCC $%04x' % rel_addr)
+
+        elif opcode == 0x91:
+            print('STA ($%02x),Y\t%04x' % (par8, idx_y))
 
         elif opcode == 0x98:
             print('TYA')
@@ -360,6 +365,9 @@ class cpu_6510:
 
         elif opcode == 0xe0:
             print('CPX #$%02x' % par8)
+
+        elif opcode == 0xe1:
+            print('SBC (#$%02x, X)' % par8)
 
         elif opcode == 0xe9:
             print('SBC #$%02x' % par8)
