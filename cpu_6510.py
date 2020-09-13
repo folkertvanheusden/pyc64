@@ -348,7 +348,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        # self.disassem(self.pc)
+        self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -584,7 +584,7 @@ class cpu_6510:
         self.a -= value
         self.p &= ~(self.flags.CARRY | 64);  # clear carry and sign
 
-        if self.a < 0:
+        if self.a >= 0:
             self.p |= self.flags.CARRY
 
         if ((olda ^ self.a) & 0x80) and ((olda ^ value) & 0x80):
