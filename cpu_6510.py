@@ -240,6 +240,9 @@ class cpu_6510:
         elif opcode == 0x18:
             print('CLC')
 
+        elif opcode == 0x20:
+            print('JSR $%04x' % par16)
+
         elif opcode == 0x28:
             print('PLP')
 
@@ -299,6 +302,9 @@ class cpu_6510:
 
         elif opcode == 0x9a:
             print('TXS')
+
+        elif opcode == 0x9d:
+            print('STA $%04x,X\t%04x' % (par16, (par16 + self.x) & 0xffff))
 
         elif opcode == 0xa0:
             print('LDY #$%02x' % par8)
@@ -385,7 +391,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        # self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -393,12 +399,8 @@ class cpu_6510:
         if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
 
-            # if prev_flags != self.p:
-            #     print('new flags: %02x' % self.p)
-
         else:
             print('UNKNOWN OPCODE')
-            self.disassem(self.pc - 1)
             assert False
 
         assert self.pc >= 0x0000 and self.pc < 0x10000
