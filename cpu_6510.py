@@ -323,6 +323,9 @@ class cpu_6510:
         elif opcode == 0x8d:
             print('STA $%04x' % par16)
 
+        elif opcode == 0x8e:
+            print('STX $%04x' % par16)
+
         elif opcode == 0x90:
             print('BCC $%04x' % rel_addr)
 
