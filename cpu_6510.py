@@ -231,8 +231,14 @@ class cpu_6510:
         elif opcode == 0x01:
             print('ORA (#$%02x,X)' % par8)
 
+        elif opcode == 0x05:
+            print('ORA (#$%02x)\t[%02x]' % (par8, self.bus.read(par8)))
+
         elif opcode == 0x08:
             print('PHP')
+
+        elif opcode == 0x09:
+            print('ORA #$%02x' % par8)
 
         elif opcode == 0x10:
             print('BPL $%04x' % rel_addr)
@@ -251,6 +257,9 @@ class cpu_6510:
 
         elif opcode == 0x30:
             print('BMI $%04x' % rel_addr)
+
+        elif opcode == 0x38:
+            print('SEC')
 
         elif opcode == 0x40:
             print('RTI')
@@ -592,6 +601,7 @@ class cpu_6510:
         self.set_NZ_flags(data)
 
     def do_Bxx(self, flag, set_):
+        before = self.pc - 1
         distance = self.read_pc()
 
         if (self.p & flag) == set_:
@@ -599,6 +609,11 @@ class cpu_6510:
                 distance = -(256 - distance)
             self.pc += distance
             self.pc &= 0xffff
+
+            if self.pc == before:
+                print('LOOP AT %04x' % self.pc)
+                self.disassem(before)
+                assert False
 
         self.cycles += 2  # FIXME
 
