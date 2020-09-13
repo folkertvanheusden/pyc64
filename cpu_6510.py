@@ -255,6 +255,12 @@ class cpu_6510:
         elif opcode == 0x40:
             print('RTI')
 
+        elif opcode == 0x45:
+            print('EOR $%02x\t[%02x]' % (par8, self.bus.read(par8)))
+
+        elif opcode == 0x48:
+            print('PHA')
+
         elif opcode == 0x49:
             print('EOR #$%02x' % par8)
 
@@ -263,6 +269,9 @@ class cpu_6510:
 
         elif opcode == 0x60:
             print('RTS')
+
+        elif opcode == 0x65:
+            print('ADC $%02x\t[%02x]' % (par8, self.bus.read(par8)))
 
         elif opcode == 0x66:
             print('ROR $%02x' % par8)
@@ -355,11 +364,17 @@ class cpu_6510:
         elif opcode == 0xc5:
             print('CMP $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
 
+        elif opcode == 0xc6:
+            print('DEC $%02x' % par8)
+
         elif opcode == 0xc9:
             print('CMP #$%02x' % par8)
 
         elif opcode == 0xca:
             print('DEX')
+
+        elif opcode == 0xce:
+            print('DEC $%04x' % par16)
 
         elif opcode == 0xd0:
             print('BNE $%04x' % rel_addr)
