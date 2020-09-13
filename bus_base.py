@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# released under AGPL v3.0
+# License: AGPL 3.0
 
 from ram import ram
 

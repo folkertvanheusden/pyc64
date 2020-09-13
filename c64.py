@@ -1,5 +1,8 @@
 #! /usr/bin/python3
 
+# (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
+# License: AGPL 3.0
+
 from bus_c64 import bus_c64
 from cpu_6510 import cpu_6510
 

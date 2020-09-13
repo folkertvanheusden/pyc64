@@ -1,3 +1,6 @@
+# (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
+# License: AGPL 3.0
+
 class bus_device:
     def __init__(self):
         pass

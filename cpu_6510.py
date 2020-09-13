@@ -1,3 +1,6 @@
+# (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
+# License: AGPL 3.0
+
 from enum import IntFlag
 
 class cpu_6510:
