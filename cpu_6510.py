@@ -219,7 +219,9 @@ class cpu_6510:
         else:
             rel_addr = addr + 2 + par8
 
-        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100), end='')
+        bs = self.bus.read(0x0001)
+
+        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
 
         if opcode == 0x00:
             print('BRK')
@@ -242,6 +244,9 @@ class cpu_6510:
         elif opcode == 0x29:
             print('AND #$%02x' % par8)
 
+        elif opcode == 0x30:
+            print('BMI $%04x' % rel_addr)
+
         elif opcode == 0x40:
             print('RTI')
 
@@ -262,6 +267,9 @@ class cpu_6510:
 
         elif opcode == 0x69:
             print('ADC #$%02x' % par8)
+
+        elif opcode == 0x6c:
+            print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
 
         elif opcode == 0x84:
             print('STY $%02x' % par8)
@@ -293,8 +301,14 @@ class cpu_6510:
         elif opcode == 0xa2:
             print('LDX #$%02x' % par8)
 
+        elif opcode == 0xa4:
+            print('LDY $%02x' % par8)
+
         elif opcode == 0xa5:
             print('LDA $%02x' % par8)
+
+        elif opcode == 0xa6:
+            print('LDX $%02x' % par8)
 
         elif opcode == 0xa9:
             print('LDA #$%02x' % par8)
@@ -305,8 +319,14 @@ class cpu_6510:
         elif opcode == 0xad:
             print('LDA $%04x' % par16)
 
+        elif opcode == 0xb4:
+            print('LDY $%02x,X' % par8)
+
         elif opcode == 0xb5:
             print('LDA $%02x,X' % par8)
+
+        elif opcode == 0xb6:
+            print('LDX $%02x,Y' % par8)
 
         elif opcode == 0xba:
             print('TSX')
@@ -357,7 +377,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        # self.disassem(self.pc)
+        self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
