@@ -236,6 +236,12 @@ class cpu_6510:
         elif opcode == 0x18:
             print('CLC')
 
+        elif opcode == 0x28:
+            print('PLP')
+
+        elif opcode == 0x29:
+            print('AND #$%02x' % par8)
+
         elif opcode == 0x40:
             print('RTI')
 
@@ -244,6 +250,9 @@ class cpu_6510:
 
         elif opcode == 0x4c:
             print('JMP $%04x' % par16)
+
+        elif opcode == 0x60:
+            print('RTS')
 
         elif opcode == 0x66:
             print('ROR $%02x' % par8)
@@ -348,7 +357,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        # self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
