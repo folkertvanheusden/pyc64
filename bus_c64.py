@@ -66,6 +66,10 @@ class bus_c64(bus_base):
         self.zones[13] = 5
         self.zones[14] = self.zones[15] = 6
 
+        self.exp_port = 0x00
+        if not self.cartridge_hi.activated() and not self.cartridge_lo.activated():
+            self.exp_port = 0x18
+
     def reset(self):
         self.bs_setting = 31  # default
 
@@ -74,23 +78,24 @@ class bus_c64(bus_base):
             return self.bs_setting
 
         zone = self.zones[addr // 4096]
-        device = self.bank_table[self.bs_setting & 31][zone]
+        device = self.bank_table[(self.bs_setting | self.exp_port) & 31][zone]
 
         return device.read(addr)
 
     def write(self, addr, value):
         if addr == 0x0001:  # bank switch register
-            print('BS was: %02x' % self.bs_setting)
+            print('BS was: %02x, value: %02x' % (self.bs_setting, value))
             # use only lower 3 bits
             self.bs_setting = value
-            print('BS  is: %02x' % self.bs_setting)
+
+            print('BS is: %02x' % self.bs_setting)
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
             print('%c' % value, end='', flush=True, file=sys.stderr)
 
         zone = self.zones[addr // 4096]
-        device = self.bank_table[self.bs_setting & 31][zone]
+        device = self.bank_table[(self.bs_setting | self.exp_port) & 31][zone]
 
         if device.write_through():
             self.ram.write(addr, value)

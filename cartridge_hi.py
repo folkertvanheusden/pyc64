@@ -1,11 +1,5 @@
-from bus_device import bus_device
+from cartridge import cartridge
 
-class cartridge_hi(bus_device):
-    def __init__(self):
-        pass
-
-    def write_through(self):
-        return True
-
+class cartridge_hi(cartridge):
     def read(self, addr):
         return 0xee
