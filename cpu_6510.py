@@ -276,6 +276,10 @@ class cpu_6510:
         elif opcode == 0x6c:
             print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
 
+        elif opcode == 0x7d:
+            addr = (par16 + self.x) & 0xffff
+            print('ADC $%04x,X\t%04x => %02x' % (par16, addr, self.bus.read(addr)))
+
         elif opcode == 0x84:
             print('STY $%02x' % par8)
 
@@ -375,6 +379,9 @@ class cpu_6510:
         elif opcode == 0xe1:
             print('SBC (#$%02x, X)' % par8)
 
+        elif opcode == 0xe6:
+            print('INC $%02x' % par8)
+
         elif opcode == 0xe9:
             print('SBC #$%02x' % par8)
 
@@ -391,7 +398,7 @@ class cpu_6510:
             print('%02x' % opcode)
 
     def tick(self):
-        # self.disassem(self.pc)
+        self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -433,6 +440,8 @@ class cpu_6510:
     def pop_stack_16b(self):
         self.sp += 1
         self.sp &= 0xff
+        if self.sp == 0x00: # stack underflow
+            assert False
         addr = self.bus.read(self.sp + 0x100)
 
         self.sp += 1
