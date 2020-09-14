@@ -26,7 +26,7 @@ class cpu_6510:
         self.opcodes[0x08] = self.PHP
         self.opcodes[0x09] = self.ORA_immediate
         self.opcodes[0x0a] = self.ASL_accumulator
-        self.opcodes[0x0C] = self.NOP_absolute
+        self.opcodes[0x0c] = self.NOP_absolute
         self.opcodes[0x0d] = self.ORA_absolute
         self.opcodes[0x0e] = self.ASL_absolute
         self.opcodes[0x10] = self.BPL
@@ -152,7 +152,7 @@ class cpu_6510:
         self.opcodes[0xbe] = self.LDX_absolute_y
         self.opcodes[0xc0] = self.CMP_immediate
         self.opcodes[0xc1] = self.CMP_indirect_x
-        self.opcodes[0xC2] = self.NOP_immediate
+        self.opcodes[0xc2] = self.NOP_immediate
         self.opcodes[0xc4] = self.CMP_zeropage
         self.opcodes[0xc5] = self.CMP_zeropage
         self.opcodes[0xc6] = self.DEC_zeropage
@@ -164,13 +164,13 @@ class cpu_6510:
         self.opcodes[0xce] = self.DEC_absolute
         self.opcodes[0xd0] = self.BNE
         self.opcodes[0xd1] = self.CMP_indirect_y
-        self.opcodes[0xD4] = self.NOP_zeropage_x
+        self.opcodes[0xd4] = self.NOP_zeropage_x
         self.opcodes[0xd5] = self.CMP_zeropage_x
         self.opcodes[0xd6] = self.DEC_zeropage_x
         self.opcodes[0xd8] = self.CLD
         self.opcodes[0xd9] = self.CMP_absolute_y
-        self.opcodes[0xDA] = self.NOP
-        self.opcodes[0xDC] = self.NOP_absolute
+        self.opcodes[0xda] = self.NOP
+        self.opcodes[0xdc] = self.NOP_absolute
         self.opcodes[0xdd] = self.CMP_absolute_x
         self.opcodes[0xde] = self.DEC_absolute_x
         self.opcodes[0xe0] = self.CMP_immediate
@@ -196,6 +196,12 @@ class cpu_6510:
         self.opcodes[0xfc] = self.NOP_absolute_x
         self.opcodes[0xfd] = self.SBC_absolute_x
         self.opcodes[0xfe] = self.INC_absolute_x
+
+        for i in range(0, 0x100):
+            ln = i & 0x0f
+            if (ln == 3 or ln == 7 or ln == 0x0b or ln == 0x0f) and self.opcodes[i]:
+                print('Invalid instruction assigment for %02x' % i)
+                assert False
 
     def reset(self):
         self.bus.reset()
