@@ -225,7 +225,10 @@ class cpu_6510:
         bs = self.bus.read(0x0001)
 
         idx_x = self.read16b((par8 + self.x) & 0xff)
+        idx_x_abs = self.read16b((par16 + self.x) & 0xffff)
+
         idx_y = (self.read16b(par8) + self.y) & 0xffff
+        idx_y_abs = self.read16b((par16 + self.y) & 0xffff)
 
         print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
 
@@ -305,8 +308,7 @@ class cpu_6510:
             print('ADC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0x7d:
-            addr = (par16 + self.x) & 0xffff
-            print('ADC $%04x,X\t%04x => %02x' % (par16, addr, self.bus.read(addr)))
+            print('ADC $%04x,X\t%04x => %02x' % (par16, idx_x_abs, self.bus.read(idx_x_abs)))
 
         elif opcode == 0x84:
             print('STY $%02x' % par8)
@@ -408,7 +410,7 @@ class cpu_6510:
             print('CLD')
 
         elif opcode == 0xdd:
-            print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read((par16 + self.x) & 0xffff)))
+            print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read(idx_x_abs)))
 
         elif opcode == 0xe0:
             print('CPX #$%02x' % par8)
@@ -425,20 +427,33 @@ class cpu_6510:
         elif opcode == 0xea:
             print('NOP')
 
+        elif opcode == 0xe5:
+            print('SBC $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
+
+        elif opcode == 0xed:
+            print('SBC $%04x\t[%02x versus %02x]' % (par16, self.a, self.bus.read(par16)))
+
         elif opcode == 0xf0:
             print('BEQ $%04x' % rel_addr)
 
         elif opcode == 0xf1:
             print('SBC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
-        elif opcode == 0xea:
-            print('NOP')
+        elif opcode == 0xf5:
+            print('SBC $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read(idx_x)))
+
+        elif opcode == 0xf9:
+            print('SBC ($%04x),Y\t%04x [%02x]' % (par8, idx_y_abs, self.bus.read(idx_y_abs)))
+
+        elif opcode == 0xfd:
+            print('SBC ($%04x,X)\t%04x [%02x]' % (par8, idx_x_abs, self.bus.read(idx_x_abs)))
 
         else:
             print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        if self.pc >= 0x34d0 and self.pc <= 0x3618:
+            self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
