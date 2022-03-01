@@ -710,11 +710,9 @@ class cpu_6510:
             if hi_nibble3 > 9:
                 hi_nibble3 -= 10
                 self.p |= self.flags.CARRY
+                self.p |= self.flags.NEGATIVE
 
             self.a = (hi_nibble3 << 4) | lo_nibble3
-
-            if self.a & 0x80:
-                self.p |= self.flags.NEGATIVE
 
         else:
             self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)  # clear carry and sign
