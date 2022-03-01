@@ -730,17 +730,42 @@ class cpu_6510:
     def do_SBC(self, value):
         olda = self.a
         value += 0 if self.p & self.flags.CARRY else 1
-        self.a -= value
-        self.p &= ~(self.flags.CARRY | 64)  # clear carry and overflow
 
-        if self.a >= 0:
-            self.p |= self.flags.CARRY
+        if self.p & self.flags.DECIMAL:
+            lo_nibble1 = self.a & 0x0f
+            lo_nibble2 = value & 0x0f
+            lo_nibble3 = lo_nibble1 - lo_nibble2
 
-        if ((olda ^ self.a) & 0x80) and ((olda ^ value) & 0x80):
-            self.p |= 64
+            h_carry = 0
+            if lo_nibble3 < 0:
+                lo_nibble3 += 10
+                h_carry = 1
 
-        self.a &= 0xff
-        self.set_NZ_flags(self.a)
+            hi_nibble1 = self.a >> 4
+            hi_nibble2 = (value >> 4) + h_carry
+            hi_nibble3 = hi_nibble1 - hi_nibble2
+
+            if hi_nibble3 < 0:
+                hi_nibble3 += 10
+                self.p |= self.flags.CARRY
+
+            self.a = (hi_nibble3 << 4) | lo_nibble3
+
+            if self.a & 0x80:
+                self.p |= self.flags.NEGATIVE
+
+        else:
+            self.a -= value
+            self.p &= ~(self.flags.CARRY | 64)  # clear carry and overflow
+
+            if self.a >= 0:
+                self.p |= self.flags.CARRY
+
+            if ((olda ^ self.a) & 0x80) and ((olda ^ value) & 0x80):
+                self.p |= 64
+
+            self.a &= 0xff
+            self.set_NZ_flags(self.a)
 
     def do_ASL(self, value):
         if value & 128:
