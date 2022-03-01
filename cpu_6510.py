@@ -316,6 +316,9 @@ class cpu_6510:
         elif opcode == 0x7d:
             print('ADC $%04x,X\t%04x => %02x' % (par16, idx_x_abs, self.bus.read(idx_x_abs)))
 
+        elif opcode == 0x81:
+            print('STA ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
+
         elif opcode == 0x84:
             print('STY $%02x' % par8)
 
@@ -373,6 +376,9 @@ class cpu_6510:
         elif opcode == 0xad:
             print('LDA $%04x' % par16)
 
+        elif opcode == 0xb0:
+            print('BCS $%04x' % rel_addr)
+
         elif opcode == 0xb4:
             print('LDY $%02x,X' % par8)
 
@@ -422,7 +428,7 @@ class cpu_6510:
             print('CPX #$%02x' % par8)
 
         elif opcode == 0xe1:
-            print('SBC (#$%02x, X)' % par8)
+            print('SBC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0xe6:
             print('INC $%02x' % par8)
@@ -681,14 +687,33 @@ class cpu_6510:
     def do_ADC(self, value):
         olda = self.a
         value += self.p & self.flags.CARRY
-        self.a += value
+
         self.p &= ~(self.flags.CARRY | 64)  # clear carry and sign
+
+        if self.p & self.flags.DECIMAL:
+            lo_nibble1 = self.a & 0x0f
+            lo_nibble2 = value & 0x0f
+            lo_nibble3 = lo_nibble1 + lo_nibble2
+
+            h_carry = 0
+            if lo_nibble3 > 9:
+                lo_nibble3 -= 10
+                h_carry = 1
+
+            hi_nibble1 = self.a >> 4
+            hi_nibble2 = (value >> 4) + h_carry
+            hi_nibble3 = hi_nibble1 + hi_nibble2
+
+            self.a = (hi_nibble3 << 4) | lo_nibble3
+
+        else:
+            self.a += value
 
         if self.a > 255:
             self.p |= self.flags.CARRY
 
         if not ((olda ^ value) & 0x80) and ((olda ^ self.a) & 0x80):
-            self.p |= 64
+            self.p |= self.flags.OVERFLOW
 
         self.a &= 0xff
         self.set_NZ_flags(self.a)
@@ -1045,7 +1070,8 @@ class cpu_6510:
 
     def JMP_absolute_indirect(self, opcode):
         addr = self.read_pc_16b()
-        self.pc = self.read16b(addr)
+        self.pc = self.bus.read(addr)
+        self.pc += self.bus.read((addr & 0xff00) | ((addr + 1) & 0xff)) << 8
         self.cycles += 5
 
     def EOR_immediate(self, opcode):
@@ -1260,7 +1286,7 @@ class cpu_6510:
         self.cycles += 2
 
     def SEC(self, opcode):
-        self.p |= 1
+        self.p |= self.flags.CARRY
         self.cycles += 2
 
     def SBC_immediate(self, opcode):
@@ -1372,7 +1398,7 @@ class cpu_6510:
         self.cycles += 4
 
     def ROL(self, opcode):
-        old_carry = self.p & 1
+        old_carry = self.p & self.flags.CARRY
 
         # FIXME cycles
 
