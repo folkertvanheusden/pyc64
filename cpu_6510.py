@@ -454,6 +454,9 @@ class cpu_6510:
         elif opcode == 0xf5:
             print('SBC $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read(idx_x)))
 
+        elif opcode == 0xf8:
+            print('SDC')
+
         elif opcode == 0xf9:
             print('SBC ($%04x),Y\t%04x [%02x]' % (par8, idx_y_abs, self.bus.read(idx_y_abs)))
 
