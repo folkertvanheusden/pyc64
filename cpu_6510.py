@@ -688,9 +688,9 @@ class cpu_6510:
         olda = self.a
         value += self.p & self.flags.CARRY
 
-        self.p &= ~(self.flags.CARRY | 64)  # clear carry and sign
-
         if self.p & self.flags.DECIMAL:
+            self.p &= ~self.flags.CARRY  # clear carry
+
             lo_nibble1 = self.a & 0x0f
             lo_nibble2 = value & 0x0f
             lo_nibble3 = lo_nibble1 + lo_nibble2
@@ -704,19 +704,28 @@ class cpu_6510:
             hi_nibble2 = (value >> 4) + h_carry
             hi_nibble3 = hi_nibble1 + hi_nibble2
 
+            if hi_nibble3 > 9:
+                hi_nibble3 -= 10
+                self.p |= self.flags.CARRY
+
             self.a = (hi_nibble3 << 4) | lo_nibble3
 
+            if self.a & 0x80:
+                self.p |= self.flags.NEGATIVE
+
         else:
+            self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)  # clear carry and sign
+
             self.a += value
 
-        if self.a > 255:
-            self.p |= self.flags.CARRY
+            if not ((olda ^ value) & 0x80) and ((olda ^ self.a) & 0x80):
+                self.p |= self.flags.OVERFLOW
 
-        if not ((olda ^ value) & 0x80) and ((olda ^ self.a) & 0x80):
-            self.p |= self.flags.OVERFLOW
+            if self.a > 255:
+                self.p |= self.flags.CARRY
+                self.a &= 0xff
 
-        self.a &= 0xff
-        self.set_NZ_flags(self.a)
+            self.set_NZ_flags(self.a)
 
     def do_SBC(self, value):
         olda = self.a
