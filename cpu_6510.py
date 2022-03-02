@@ -473,24 +473,11 @@ class cpu_6510:
 
     def tick(self):
         #if self.pc >= 0x34d0 and self.pc <= 0x3618:
-        #self.disassem(self.pc)
+        self.disassem(self.pc)
 
-        prev_flags = self.p;
         opcode = self.read_pc()
 
-        if self.opcodes[opcode]:
-            self.opcodes[opcode](opcode)
-
-        else:
-            print('UNKNOWN OPCODE %02x' % opcode)
-            assert False
-
-        assert self.pc >= 0x0000 and self.pc < 0x10000
-        assert self.a >= 0 and self.a < 256
-        assert self.x >= 0 and self.x < 256
-        assert self.y >= 0 and self.y < 256
-        assert self.sp >= 0 and self.sp < 256
-        assert self.p >= 0 and self.p < 256
+        self.opcodes[opcode](opcode)
 
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
