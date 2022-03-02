@@ -241,7 +241,7 @@ class cpu_6510:
         idx_y = (self.read16b(par8) + self.y) & 0xffff
         idx_y_abs = self.read16b((par16 + self.y) & 0xffff)
 
-        print('%04x[%02x], a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
+        print('%04x[%02x], %02x, a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.bus.read(0x200), self.a, self.x, self.y, self.p, self.sp + 0x0100, bs), end='')
 
         if opcode == 0x00:
             print('BRK')
@@ -683,8 +683,9 @@ class cpu_6510:
     def BVS(self, opcode):
         self.do_Bxx(self.flags.OVERFLOW, self.flags.OVERFLOW)
 
-    def do_ADC(self, value):
+    def do_ADC_SBC(self, value):
         olda = self.a
+        org_value = value
         value += self.p & self.flags.CARRY
 
         if self.p & self.flags.DECIMAL:
@@ -720,7 +721,7 @@ class cpu_6510:
 
             self.a += value
 
-            if not ((olda ^ value) & 0x80) and ((olda ^ self.a) & 0x80):
+            if (olda ^ self.a) & (org_value ^ self.a) & 0x80:
                 self.p |= self.flags.OVERFLOW
 
             if self.a > 255:
@@ -729,45 +730,11 @@ class cpu_6510:
 
             self.set_NZ_flags(self.a)
 
+    def do_ADC(self, value):
+        self.do_ADC_SBC(value)
+
     def do_SBC(self, value):
-        olda = self.a
-        value += 0 if self.p & self.flags.CARRY else 1
-
-        if self.p & self.flags.DECIMAL:
-            lo_nibble1 = self.a & 0x0f
-            lo_nibble2 = value & 0x0f
-            lo_nibble3 = lo_nibble1 - lo_nibble2
-
-            h_carry = 0
-            if lo_nibble3 < 0:
-                lo_nibble3 += 10
-                h_carry = 1
-
-            hi_nibble1 = self.a >> 4
-            hi_nibble2 = (value >> 4) + h_carry
-            hi_nibble3 = hi_nibble1 - hi_nibble2
-
-            if hi_nibble3 < 0:
-                hi_nibble3 += 10
-                self.p |= self.flags.CARRY
-
-            self.a = (hi_nibble3 << 4) | lo_nibble3
-
-            if self.a & 0x80:
-                self.p |= self.flags.NEGATIVE
-
-        else:
-            self.a -= value
-            self.p &= ~(self.flags.CARRY | 64)  # clear carry and overflow
-
-            if self.a >= 0:
-                self.p |= self.flags.CARRY
-
-            if ((olda ^ self.a) & 0x80) and ((olda ^ value) & 0x80):
-                self.p |= 64
-
-            self.a &= 0xff
-            self.set_NZ_flags(self.a)
+        self.do_ADC_SBC(value ^ 0xff)
 
     def do_ASL(self, value):
         if value & 128:
