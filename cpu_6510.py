@@ -822,6 +822,7 @@ class cpu_6510:
         self.push_stack(work)
 
         self.p |= self.flags.INTERRUPT
+        self.p |= self.flags.BREAK
 
         self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
