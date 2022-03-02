@@ -209,7 +209,7 @@ class cpu_6510:
         self.pc = self.bus.read(0xfffc) | (self.bus.read(0xfffd) << 8)
         self.a = self.x = self.y = 0
         self.sp = 0xff
-        self.p = 0
+        self.p = self.flags.BREAK | self.flags.UNUSED
 
         self.cycles = 0
 
@@ -473,7 +473,7 @@ class cpu_6510:
 
     def tick(self):
         #if self.pc >= 0x34d0 and self.pc <= 0x3618:
-        self.disassem(self.pc)
+        #self.disassem(self.pc)
 
         prev_flags = self.p;
         opcode = self.read_pc()
@@ -606,8 +606,15 @@ class cpu_6510:
 
     def addr_indirect_y(self):
         addr = self.read_pc()
-        addr2 = self.read16b(addr)
+
+        if addr == 0x00ff:
+            addr2 = self.bus.read(0xff) | (self.bus.read(0x00) << 8)
+
+        else:
+            addr2 = self.read16b(addr)
+
         addr3 = (addr2 + self.y) & 0xffff
+
         return addr3
 
     def data_indirect_y(self):
@@ -823,6 +830,8 @@ class cpu_6510:
     def RTI(self, opcode):
         self.opcodes[0x28](0x28)  # PLP
         self.pc = self.pop_stack_16b()
+        self.p |= self.flags.BREAK
+        self.p |= self.flags.UNUSED
         self.cycles += 6
 
     def LDA_immediate(self, opcode):
