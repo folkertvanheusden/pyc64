@@ -253,6 +253,9 @@ class cpu_6510:
         elif opcode == 0x09:
             print('ORA #$%02x' % par8)
 
+        elif opcode == 0x0d:
+            print('ORA $%04x' % par16)
+
         elif opcode == 0x10:
             print('BPL $%04x' % rel_addr)
 
