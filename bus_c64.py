@@ -14,6 +14,8 @@ import sys
 
 class bus_c64(bus_base):
     def __init__(self):
+        bus_base.__init__(self)
+
         self.basic_rom = basic_rom()
         self.cartridge_hi = cartridge_hi()
         self.cartridge_lo = cartridge_lo()
