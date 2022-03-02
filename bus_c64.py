@@ -92,7 +92,7 @@ class bus_c64(bus_base):
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
-            print('%c' % value, end='', flush=True, file=sys.stderr)
+            print('%c' % (value if value >= 32 else (value | 64)), end='', flush=True, file=sys.stderr)
 
         zone = self.zones[addr // 4096]
         device = self.bank_table[(self.bs_setting | self.exp_port) & 31][zone]
