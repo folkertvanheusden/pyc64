@@ -516,32 +516,26 @@ class cpu_6510:
         return addr
 
     def set_NZ_flags(self, result_value):
+        self.p &= ~(self.flags.NEGATIVE | self.flags.ZERO)
+
         if result_value > 127:  # NEGATIVE
             self.p |= self.flags.NEGATIVE
-        else:
-            self.p &= ~self.flags.NEGATIVE
 
         if result_value == 0:  # ZERO
             self.p |= self.flags.ZERO
-        else:
-            self.p &= ~self.flags.ZERO
 
     def set_CZN_flags(self, register, value):
+        self.p &= ~(self.flags.CARRY | self.flags.NEGATIVE | self.flags.ZERO)
+
         if register >= value:  # CARRY
             self.p |= self.flags.CARRY
-        else:
-            self.p &= ~self.flags.CARRY
 
         if value == register:  # ZERO
             self.p |= self.flags.ZERO
-        else:
-            self.p &= ~self.flags.ZERO
 
         sub = (register - value) & 0xff
         if sub >= 128:  # NEGATIVE
             self.p |= self.flags.NEGATIVE
-        else:
-            self.p &= ~self.flags.NEGATIVE
 
     def read16b(self, addr):
         return self.bus.read(addr) | (self.bus.read((addr + 1) & 0xffff) << 8)
