@@ -213,10 +213,15 @@ class cpu_6510:
 
         self.cycles = 0
 
+    def NMI(self):
+        self.push_stack_16b(self.pc)
+        self.opcodes[0x08](0x08)  # PHP
+        self.pc = self.bus.read(0xfffa) | (self.bus.read(0xfffb) << 8)
+
     def IRQ(self):
         if (self.p & self.flags.INTERRUPT) == 0:
             self.push_stack_16b(self.pc)
-            self.push_stack(self.p | (1 << 5) | (1 << 4))
+            self.opcodes[0x08](0x08)  # PHP
             self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
     def disassem(self, addr):
@@ -477,7 +482,7 @@ class cpu_6510:
             self.opcodes[opcode](opcode)
 
         else:
-            print('UNKNOWN OPCODE')
+            print('UNKNOWN OPCODE %02x' % opcode)
             assert False
 
         assert self.pc >= 0x0000 and self.pc < 0x10000
@@ -816,7 +821,7 @@ class cpu_6510:
         self.cycles += 7
 
     def RTI(self, opcode):
-        self.p = self.pop_stack()
+        self.opcodes[0x28](0x28)  # PLP
         self.pc = self.pop_stack_16b()
         self.cycles += 6
 
