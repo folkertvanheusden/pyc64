@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: AGPL 3.0
+# License: Apache License v2.0
 
 from bus_base import bus_base
 from basic_rom import basic_rom
@@ -14,6 +14,8 @@ import sys
 
 class bus_c64(bus_base):
     def __init__(self):
+        bus_base.__init__(self)
+
         self.basic_rom = basic_rom()
         self.cartridge_hi = cartridge_hi()
         self.cartridge_lo = cartridge_lo()
@@ -77,6 +79,9 @@ class bus_c64(bus_base):
         if addr == 0x0001:  # bank switch register
             return self.bs_setting
 
+        if addr == 0xdd0e:
+            print('NMI thing read')
+
         zone = self.zones[addr // 4096]
         device = self.bank_table[(self.bs_setting | self.exp_port) & 31][zone]
 
@@ -92,7 +97,10 @@ class bus_c64(bus_base):
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
-            print('%c' % value, end='', flush=True, file=sys.stderr)
+            print('%c' % (value if value >= 32 else (value | 64)), end='', flush=True, file=sys.stderr)
+
+        if addr == 0xdd0e:
+            print('NMI thing write')
 
         zone = self.zones[addr // 4096]
         device = self.bank_table[(self.bs_setting | self.exp_port) & 31][zone]

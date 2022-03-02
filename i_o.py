@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: AGPL 3.0
+# License: Apache License v2.0
 
 from bus_device import bus_device
 
@@ -12,11 +12,11 @@ class i_o(bus_device):
         return False
 
     def read(self, addr):
-        #print('I/O read from %04x' % addr)
+        # print('I/O read from %04x' % addr)
         if addr == 0xd012:
             return 0xff
         return self.data[addr]  # FIXME
 
     def write(self, addr, value):
-        #print('I/O write to %04x: %02x' % (addr, value))
+        # print('I/O write to %04x: %02x' % (addr, value))
         self.data[addr] = value  # FIXME

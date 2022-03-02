@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: AGPL 3.0
+# License: Apache License v2.0
 
 class bus_device:
     def __init__(self):

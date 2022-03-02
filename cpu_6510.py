@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: AGPL 3.0
+# License: Apache License v2.0
 
 from enum import IntFlag
 
@@ -209,14 +209,19 @@ class cpu_6510:
         self.pc = self.bus.read(0xfffc) | (self.bus.read(0xfffd) << 8)
         self.a = self.x = self.y = 0
         self.sp = 0xff
-        self.p = 0
+        self.p = self.flags.BREAK | self.flags.UNUSED
 
         self.cycles = 0
+
+    def NMI(self):
+        self.push_stack_16b(self.pc)
+        self.opcodes[0x08](0x08)  # PHP
+        self.pc = self.bus.read(0xfffa) | (self.bus.read(0xfffb) << 8)
 
     def IRQ(self):
         if (self.p & self.flags.INTERRUPT) == 0:
             self.push_stack_16b(self.pc)
-            self.push_stack(self.p | (1 << 5) | (1 << 4))
+            self.opcodes[0x08](0x08)  # PHP
             self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
     def disassem(self, addr):
@@ -473,22 +478,9 @@ class cpu_6510:
         #if self.pc >= 0x34d0 and self.pc <= 0x3618:
         self.disassem(self.pc)
 
-        prev_flags = self.p;
         opcode = self.read_pc()
 
-        if self.opcodes[opcode]:
-            self.opcodes[opcode](opcode)
-
-        else:
-            print('UNKNOWN OPCODE')
-            assert False
-
-        assert self.pc >= 0x0000 and self.pc < 0x10000
-        assert self.a >= 0 and self.a < 256
-        assert self.x >= 0 and self.x < 256
-        assert self.y >= 0 and self.y < 256
-        assert self.sp >= 0 and self.sp < 256
-        assert self.p >= 0 and self.p < 256
+        self.opcodes[opcode](opcode)
 
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
@@ -604,8 +596,15 @@ class cpu_6510:
 
     def addr_indirect_y(self):
         addr = self.read_pc()
-        addr2 = self.read16b(addr)
+
+        if addr == 0x00ff:
+            addr2 = self.bus.read(0xff) | (self.bus.read(0x00) << 8)
+
+        else:
+            addr2 = self.read16b(addr)
+
         addr3 = (addr2 + self.y) & 0xffff
+
         return addr3
 
     def data_indirect_y(self):
@@ -813,14 +812,17 @@ class cpu_6510:
         self.push_stack(work)
 
         self.p |= self.flags.INTERRUPT
+        self.p |= self.flags.BREAK
 
         self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
         self.cycles += 7
 
     def RTI(self, opcode):
-        self.p = self.pop_stack()
+        self.opcodes[0x28](0x28)  # PLP
         self.pc = self.pop_stack_16b()
+        self.p |= self.flags.BREAK
+        self.p |= self.flags.UNUSED
         self.cycles += 6
 
     def LDA_immediate(self, opcode):
