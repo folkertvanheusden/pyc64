@@ -688,7 +688,7 @@ class cpu_6510:
 
         if self.p & self.flags.DECIMAL:
             if sub:
-                carry = 1 if (self.p & self.flags.CARRY) else 0
+                carry = 0 if (self.p & self.flags.CARRY) else 1
 
                 self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
 
