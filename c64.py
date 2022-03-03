@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-# (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
+# (C) 2022 by Folkert van Heusden <mail@vanheusden.com>
 # License: Apache License v2.0
 
 from bus_c64 import bus_c64
@@ -23,6 +23,8 @@ class cbm64:
 
         while True:
             self.cpu.tick()
+
+            self.bus.get_vic_ii().tick()
 
             if self.cpu.cycles - p_nmi_cycles >= 20000:
                 p_nmi_cycles = self.cpu.cycles

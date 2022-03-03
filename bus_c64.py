@@ -11,6 +11,7 @@ from kernal_rom import kernal_rom
 from nothing import nothing
 from ram import ram
 import sys
+from vic_ii import vic_ii
 
 class bus_c64(bus_base):
     def __init__(self):
@@ -24,6 +25,7 @@ class bus_c64(bus_base):
         self.kernal_rom = kernal_rom()
         self.nothing = nothing()
         self.ram = ram()
+        self.vic_ii = vic_ii()
 
         self.bank_table = [ None ] * 32
         self.bank_table[0] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
@@ -72,6 +74,11 @@ class bus_c64(bus_base):
         if not self.cartridge_hi.activated() and not self.cartridge_lo.activated():
             self.exp_port = 0x18
 
+        self.vic_ii.start(self)
+
+    def get_vic_ii(self):
+        return self.vic_ii
+
     def reset(self):
         self.bs_setting = 31  # default
 
@@ -90,7 +97,8 @@ class bus_c64(bus_base):
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
-            print('%c' % (value if value >= 32 else (value | 64)), end='', flush=True, file=sys.stderr)
+            self.vic_ii.write(addr, value)
+            #print('%c' % (value if value >= 32 else (value | 64)), end='', flush=True, file=sys.stderr)
 
         zone = self.zones[addr // 4096]
         device = self.bank_table[((self.bs_setting & 7) | self.exp_port) & 31][zone]
