@@ -19,6 +19,9 @@ class cbm64:
         while True:
             self.cpu.tick()
 
+            if self.bus.read(0x200) == 0xf0:
+                break
+
 c64 = cbm64()
 c64.reset()
 c64.run()
