@@ -708,6 +708,8 @@ class cpu_6510:
 
                 if hi_nibble3 < 0:
                     hi_nibble3 += 10
+
+                else:  # NOT borrow  (!carry)
                     self.p |= self.flags.CARRY
 
                 result = (hi_nibble3 << 4) | lo_nibble3
