@@ -3,16 +3,6 @@
 
 from enum import IntFlag
 
-class filelf():
-    def __init__(self, name, mode = 'r'):
-        self.fh = open(name, mode)
-
-    def print(self, string):
-        self.fh.write(string + '\n')
-
-    def print_no_lf(self, string):
-        self.fh.write(string)
-
 class cpu_6510:
     class flags(IntFlag):
         CARRY     = 0x01
@@ -26,8 +16,6 @@ class cpu_6510:
 
     def __init__(self, bus):
         self.bus = bus
-
-        self.log = filelf('log.dat', 'a')
 
         self.opcodes = [ None ] * 256
         self.opcodes[0x00] = self.BRK
@@ -248,238 +236,238 @@ class cpu_6510:
         idx_y = (self.read16b(par8) + self.y) & 0xffff
         idx_y_abs = self.read16b((par16 + self.y) & 0xffff)
 
-        self.log.print_no_lf('%04x[%02x], %02x, a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.bus.read(0x200), self.a, self.x, self.y, self.p, self.sp + 0x0100, bs))
+        self.bus.log.print_no_lf('%04x[%02x], %02x, a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.bus.read(0x200), self.a, self.x, self.y, self.p, self.sp + 0x0100, bs))
 
         if opcode == 0x00:
-            self.log.print('BRK')
+            self.bus.log.print('BRK')
 
         elif opcode == 0x01:
-            self.log.print('ORA (#$%02x,X)' % par8)
+            self.bus.log.print('ORA (#$%02x,X)' % par8)
 
         elif opcode == 0x05:
-            self.log.print('ORA (#$%02x)\t[%02x]' % (par8, self.bus.read(par8)))
+            self.bus.log.print('ORA (#$%02x)\t[%02x]' % (par8, self.bus.read(par8)))
 
         elif opcode == 0x08:
-            self.log.print('PHP')
+            self.bus.log.print('PHP')
 
         elif opcode == 0x09:
-            self.log.print('ORA #$%02x' % par8)
+            self.bus.log.print('ORA #$%02x' % par8)
 
         elif opcode == 0x0d:
-            self.log.print('ORA $%04x' % par16)
+            self.bus.log.print('ORA $%04x' % par16)
 
         elif opcode == 0x10:
-            self.log.print('BPL $%04x' % rel_addr)
+            self.bus.log.print('BPL $%04x' % rel_addr)
 
         elif opcode == 0x18:
-            self.log.print('CLC')
+            self.bus.log.print('CLC')
 
         elif opcode == 0x20:
-            self.log.print('JSR $%04x' % par16)
+            self.bus.log.print('JSR $%04x' % par16)
 
         elif opcode == 0x28:
-            self.log.print('PLP')
+            self.bus.log.print('PLP')
 
         elif opcode == 0x29:
-            self.log.print('AND #$%02x' % par8)
+            self.bus.log.print('AND #$%02x' % par8)
 
         elif opcode == 0x30:
-            self.log.print('BMI $%04x' % rel_addr)
+            self.bus.log.print('BMI $%04x' % rel_addr)
 
         elif opcode == 0x38:
-            self.log.print('SEC')
+            self.bus.log.print('SEC')
 
         elif opcode == 0x40:
-            self.log.print('RTI')
+            self.bus.log.print('RTI')
 
         elif opcode == 0x45:
-            self.log.print('EOR $%02x\t[%02x]' % (par8, self.bus.read(par8)))
+            self.bus.log.print('EOR $%02x\t[%02x]' % (par8, self.bus.read(par8)))
 
         elif opcode == 0x48:
-            self.log.print('PHA')
+            self.bus.log.print('PHA')
 
         elif opcode == 0x49:
-            self.log.print('EOR #$%02x' % par8)
+            self.bus.log.print('EOR #$%02x' % par8)
 
         elif opcode == 0x4c:
-            self.log.print('JMP $%04x' % par16)
+            self.bus.log.print('JMP $%04x' % par16)
 
         elif opcode == 0x60:
-            self.log.print('RTS')
+            self.bus.log.print('RTS')
 
         elif opcode == 0x61:
-            self.log.print('ADC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
+            self.bus.log.print('ADC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0x65:
-            self.log.print('ADC $%02x\t[%02x]' % (par8, self.bus.read(par8)))
+            self.bus.log.print('ADC $%02x\t[%02x]' % (par8, self.bus.read(par8)))
 
         elif opcode == 0x66:
-            self.log.print('ROR $%02x' % par8)
+            self.bus.log.print('ROR $%02x' % par8)
 
         elif opcode == 0x68:
-            self.log.print('PLA')
+            self.bus.log.print('PLA')
 
         elif opcode == 0x69:
-            self.log.print('ADC #$%02x' % par8)
+            self.bus.log.print('ADC #$%02x' % par8)
 
         elif opcode == 0x6c:
-            self.log.print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
+            self.bus.log.print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
 
         elif opcode == 0x71:
-            self.log.print('ADC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
+            self.bus.log.print('ADC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0x7d:
-            self.log.print('ADC $%04x,X\t%04x => %02x' % (par16, idx_x_abs, self.bus.read(idx_x_abs)))
+            self.bus.log.print('ADC $%04x,X\t%04x => %02x' % (par16, idx_x_abs, self.bus.read(idx_x_abs)))
 
         elif opcode == 0x81:
-            self.log.print('STA ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
+            self.bus.log.print('STA ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0x84:
-            self.log.print('STY $%02x' % par8)
+            self.bus.log.print('STY $%02x' % par8)
 
         elif opcode == 0x85:
-            self.log.print('STA $%02x' % par8)
+            self.bus.log.print('STA $%02x' % par8)
 
         elif opcode == 0x86:
-            self.log.print('STX $%02x' % par8)
+            self.bus.log.print('STX $%02x' % par8)
 
         elif opcode == 0x88:
-            self.log.print('DEY')
+            self.bus.log.print('DEY')
 
         elif opcode == 0x8d:
-            self.log.print('STA $%04x' % par16)
+            self.bus.log.print('STA $%04x' % par16)
 
         elif opcode == 0x8e:
-            self.log.print('STX $%04x' % par16)
+            self.bus.log.print('STX $%04x' % par16)
 
         elif opcode == 0x90:
-            self.log.print('BCC $%04x' % rel_addr)
+            self.bus.log.print('BCC $%04x' % rel_addr)
 
         elif opcode == 0x91:
-            self.log.print('STA ($%02x),Y\t%04x' % (par8, idx_y))
+            self.bus.log.print('STA ($%02x),Y\t%04x' % (par8, idx_y))
 
         elif opcode == 0x98:
-            self.log.print('TYA')
+            self.bus.log.print('TYA')
 
         elif opcode == 0x9a:
-            self.log.print('TXS')
+            self.bus.log.print('TXS')
 
         elif opcode == 0x9d:
-            self.log.print('STA $%04x,X\t%04x' % (par16, (par16 + self.x) & 0xffff))
+            self.bus.log.print('STA $%04x,X\t%04x' % (par16, (par16 + self.x) & 0xffff))
 
         elif opcode == 0xa0:
-            self.log.print('LDY #$%02x' % par8)
+            self.bus.log.print('LDY #$%02x' % par8)
 
         elif opcode == 0xa2:
-            self.log.print('LDX #$%02x' % par8)
+            self.bus.log.print('LDX #$%02x' % par8)
 
         elif opcode == 0xa4:
-            self.log.print('LDY $%02x' % par8)
+            self.bus.log.print('LDY $%02x' % par8)
 
         elif opcode == 0xa5:
-            self.log.print('LDA $%02x' % par8)
+            self.bus.log.print('LDA $%02x' % par8)
 
         elif opcode == 0xa6:
-            self.log.print('LDX $%02x' % par8)
+            self.bus.log.print('LDX $%02x' % par8)
 
         elif opcode == 0xa9:
-            self.log.print('LDA #$%02x' % par8)
+            self.bus.log.print('LDA #$%02x' % par8)
 
         elif opcode == 0xaa:
-            self.log.print('TAX')
+            self.bus.log.print('TAX')
 
         elif opcode == 0xad:
-            self.log.print('LDA $%04x' % par16)
+            self.bus.log.print('LDA $%04x' % par16)
 
         elif opcode == 0xb0:
-            self.log.print('BCS $%04x' % rel_addr)
+            self.bus.log.print('BCS $%04x' % rel_addr)
 
         elif opcode == 0xb4:
-            self.log.print('LDY $%02x,X' % par8)
+            self.bus.log.print('LDY $%02x,X' % par8)
 
         elif opcode == 0xb5:
-            self.log.print('LDA $%02x,X' % par8)
+            self.bus.log.print('LDA $%02x,X' % par8)
 
         elif opcode == 0xb6:
-            self.log.print('LDX $%02x,Y' % par8)
+            self.bus.log.print('LDX $%02x,Y' % par8)
 
         elif opcode == 0xba:
-            self.log.print('TSX')
+            self.bus.log.print('TSX')
 
         elif opcode == 0xbd:
-            self.log.print('LDA ($%04x,X)' % par16)
+            self.bus.log.print('LDA ($%04x,X)' % par16)
 
         elif opcode == 0xc0:
-            self.log.print('CPY #$%02x' % par8)
+            self.bus.log.print('CPY #$%02x' % par8)
 
         elif opcode == 0xc5:
-            self.log.print('CMP $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
+            self.bus.log.print('CMP $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
 
         elif opcode == 0xc6:
-            self.log.print('DEC $%02x' % par8)
+            self.bus.log.print('DEC $%02x' % par8)
 
         elif opcode == 0xc9:
-            self.log.print('CMP #$%02x' % par8)
+            self.bus.log.print('CMP #$%02x' % par8)
 
         elif opcode == 0xca:
-            self.log.print('DEX')
+            self.bus.log.print('DEX')
 
         elif opcode == 0xce:
-            self.log.print('DEC $%04x' % par16)
+            self.bus.log.print('DEC $%04x' % par16)
 
         elif opcode == 0xd0:
-            self.log.print('BNE $%04x' % rel_addr)
+            self.bus.log.print('BNE $%04x' % rel_addr)
 
         elif opcode == 0xd5:
-            self.log.print('CMP $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read((par8 + self.x) & 0xff)))
+            self.bus.log.print('CMP $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read((par8 + self.x) & 0xff)))
 
         elif opcode == 0xd8:
-            self.log.print('CLD')
+            self.bus.log.print('CLD')
 
         elif opcode == 0xdd:
-            self.log.print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read(idx_x_abs)))
+            self.bus.log.print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read(idx_x_abs)))
 
         elif opcode == 0xe0:
-            self.log.print('CPX #$%02x' % par8)
+            self.bus.log.print('CPX #$%02x' % par8)
 
         elif opcode == 0xe1:
-            self.log.print('SBC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
+            self.bus.log.print('SBC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0xe6:
-            self.log.print('INC $%02x' % par8)
+            self.bus.log.print('INC $%02x' % par8)
 
         elif opcode == 0xe9:
-            self.log.print('SBC #$%02x' % par8)
+            self.bus.log.print('SBC #$%02x' % par8)
 
         elif opcode == 0xea:
-            self.log.print('NOP')
+            self.bus.log.print('NOP')
 
         elif opcode == 0xe5:
-            self.log.print('SBC $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
+            self.bus.log.print('SBC $%02x\t[%02x versus %02x]' % (par8, self.a, self.bus.read(par8)))
 
         elif opcode == 0xed:
-            self.log.print('SBC $%04x\t[%02x versus %02x]' % (par16, self.a, self.bus.read(par16)))
+            self.bus.log.print('SBC $%04x\t[%02x versus %02x]' % (par16, self.a, self.bus.read(par16)))
 
         elif opcode == 0xf0:
-            self.log.print('BEQ $%04x' % rel_addr)
+            self.bus.log.print('BEQ $%04x' % rel_addr)
 
         elif opcode == 0xf1:
-            self.log.print('SBC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
+            self.bus.log.print('SBC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0xf5:
-            self.log.print('SBC $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read(idx_x)))
+            self.bus.log.print('SBC $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read(idx_x)))
 
         elif opcode == 0xf8:
-            self.log.print('SED')
+            self.bus.log.print('SED')
 
         elif opcode == 0xf9:
-            self.log.print('SBC ($%04x),Y\t%04x [%02x]' % (par8, idx_y_abs, self.bus.read(idx_y_abs)))
+            self.bus.log.print('SBC ($%04x),Y\t%04x [%02x]' % (par8, idx_y_abs, self.bus.read(idx_y_abs)))
 
         elif opcode == 0xfd:
-            self.log.print('SBC ($%04x,X)\t%04x [%02x]' % (par8, idx_x_abs, self.bus.read(idx_x_abs)))
+            self.bus.log.print('SBC ($%04x,X)\t%04x [%02x]' % (par8, idx_x_abs, self.bus.read(idx_x_abs)))
 
         else:
-            self.log.print('%02x' % opcode)
+            self.bus.log.print('%02x' % opcode)
 
     def tick(self):
         self.disassem(self.pc)

@@ -4,8 +4,11 @@
 from cartridge import cartridge
 
 class cartridge_lo(cartridge):
-    def __init__(self):
+    def __init__(self, bus):
+        cartridge.__init__(self, bus)
+
         fh = open('c64-diag-586220/diag-c64_586220.bin', 'rb')
+        # fh = open('c64_burn-in_test.bin', 'rb')
         self.rom: List[int] = [ int(b) for b in fh.read() ]
         fh.close()
 

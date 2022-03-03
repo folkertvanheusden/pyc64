@@ -2,8 +2,8 @@
 # License: Apache License v2.0
 
 class bus_device:
-    def __init__(self):
-        pass
+    def __init__(self, bus):
+        self.bus = bus
 
     def write_through(self):
         return None

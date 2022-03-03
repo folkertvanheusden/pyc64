@@ -18,10 +18,10 @@ class bus_c64(bus_base):
         bus_base.__init__(self)
 
         self.basic_rom = basic_rom()
-        self.cartridge_hi = cartridge_hi()
-        self.cartridge_lo = cartridge_lo()
+        self.cartridge_hi = cartridge_hi(self)
+        self.cartridge_lo = cartridge_lo(self)
         self.character_rom = character_rom()
-        self.i_o = i_o()
+        self.i_o = i_o(self)
         self.kernal_rom = kernal_rom()
         self.nothing = nothing()
         self.ram = ram()
@@ -94,6 +94,7 @@ class bus_c64(bus_base):
     def write(self, addr, value):
         if addr == 0x0001:  # bank switch register
             self.bs_setting = value
+            self.log.print('write bank switch register (%02x)' % value)
             return
 
         if addr >= 0x0400 and addr < 0x0400 + 1024:

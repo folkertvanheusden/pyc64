@@ -37,10 +37,10 @@ class vic_ii:
                 self.window.refresh()
                 curses.doupdate()
 
-        self.bus.write(0xd012, self.raster_line & 255)
+        #self.bus.write(0xd012, self.raster_line & 255)
 
-        org_value = self.bus.read(0xd011)
-        self.bus.write(0xd011, org_value | ((self.raster_line & 0x0100) >> 1))
+        #org_value = self.bus.read(0xd011)
+        #self.bus.write(0xd011, org_value | ((self.raster_line & 0x0100) >> 1))
 
     def write(self, addr, value):
         if addr >= 0x0400 and addr < 0x0800:  # screen ram
