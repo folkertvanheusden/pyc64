@@ -470,7 +470,7 @@ class cpu_6510:
             self.bus.log.print('%02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        #self.disassem(self.pc)
 
         opcode = self.read_pc()
 

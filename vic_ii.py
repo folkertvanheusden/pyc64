@@ -1,7 +1,12 @@
 import curses
+import sdl2
+import sdl2.ext
+from threading import Thread
 
-class vic_ii:
+class vic_ii(Thread):
     def __init__(self):
+        super().__init__()
+
         self.cycle = 0
         self.raster_line = 0
 
@@ -20,7 +25,7 @@ class vic_ii:
         curses.init_pair(6 + 1, curses.COLOR_BLUE   , curses.COLOR_BLACK)
         curses.init_pair(7 + 1, curses.COLOR_YELLOW , curses.COLOR_BLACK)
 
-    def start(self, bus):
+    def begin(self, bus):
         self.bus = bus
 
     def tick(self):
@@ -46,6 +51,8 @@ class vic_ii:
         if addr >= 0x0400 and addr < 0x0800:  # screen ram
             addr -= 0x0400
 
+            value = int(value)
+
             self.screen_ram[addr] = value
             
             if value < 32:
@@ -59,3 +66,87 @@ class vic_ii:
             self.color_ram[addr] = value
 
             #self.window.chgat(addr // 40, addr % 40, curses.color_pair((value & 7) + 1))
+
+    def run(self):
+        sdl2.ext.init()
+
+        window = sdl2.ext.Window('PyC64', size=(640, 480))
+        window.show()
+
+        windowsurface = window.get_surface()
+
+        pixelview = sdl2.ext.PixelView(windowsurface)
+
+        palette = [
+                sdl2.ext.Color(0, 0, 0),
+                sdl2.ext.Color(255, 255, 255),
+                sdl2.ext.Color(136, 0, 0),
+                sdl2.ext.Color(170, 255, 238),
+                sdl2.ext.Color(204, 68, 204),
+                sdl2.ext.Color(0, 204, 85),
+                sdl2.ext.Color(0, 0, 170),
+                sdl2.ext.Color(238, 238, 119),
+                sdl2.ext.Color(221, 136, 85),
+                sdl2.ext.Color(102, 68, 0),
+                sdl2.ext.Color(255, 119, 119),
+                sdl2.ext.Color(51, 51, 51),
+                sdl2.ext.Color(119, 119, 119),
+                sdl2.ext.Color(170, 255, 102),
+                sdl2.ext.Color(0, 136, 255),
+                sdl2.ext.Color(187, 187, 187)
+                ]
+
+        line = 0
+
+        running = True
+
+        while running:
+            events = sdl2.ext.get_events()
+
+            for event in events:
+                if event.type == sdl2.SDL_QUIT:
+                    running = False
+
+            if not running:
+                continue
+
+            white = sdl2.ext.Color(255, 255, 255)
+            black = sdl2.ext.Color(  0,   0,   0)
+
+            for line in range(0, 25):
+                offset = line * 40
+
+                for x in range(0, 40):
+                    b = self.bus.read(0x0400 + offset + x)
+
+                    addr_chargen = 0xd000 + b * 8
+
+                    fg_color_index = self.color_ram[offset + x] & 15
+                    fg_color = palette[fg_color_index]
+
+                    for row in range(0, 8):
+                        char_scan_line = self.bus.character_rom.read(addr_chargen + row)
+
+                        y = line * 8 + row
+
+                        xc = x * 8
+
+                        mask = 128
+
+                        for col in range(xc, xc + 8):
+                            if char_scan_line & mask:
+                                pixelview[y][col] = fg_color
+        
+                            else:
+                                pixelview[y][col] = black
+
+                            mask >>= 1
+
+            del pixelview
+            pixelview = sdl2.ext.PixelView(windowsurface)
+
+            window.refresh()
+
+        sdl2.SDL_DestroyWindow(window)
+
+        sdl2.SDL_Quit()

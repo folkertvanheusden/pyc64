@@ -74,7 +74,7 @@ class bus_c64(bus_base):
         if not self.cartridge_hi.activated() and not self.cartridge_lo.activated():
             self.exp_port = 0x18
 
-        self.vic_ii.start(self)
+        self.vic_ii.begin(self)
 
     def get_vic_ii(self):
         return self.vic_ii

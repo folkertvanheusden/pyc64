@@ -8,10 +8,12 @@ class filelf():
         self.fh = open(name, mode)
 
     def print(self, string):
-        self.fh.write(string + '\n')
+        #self.fh.write(string + '\n')
+        pass
 
     def print_no_lf(self, string):
-        self.fh.write(string)
+        #self.fh.write(string)
+        pass
 
 class bus_base:
     def __init__(self):

@@ -5,6 +5,8 @@
 
 from bus_c64 import bus_c64
 from cpu_6510 import cpu_6510
+import sys
+import time
 
 class cbm64:
     def __init__(self):
@@ -18,8 +20,12 @@ class cbm64:
         self.cpu.reset()
 
     def run(self):
+        self.bus.get_vic_ii().start()
+
         p_nmi_cycles = 0
         p_irq_cycles = 0
+
+        start = time.time()
 
         while True:
             self.cpu.tick()
@@ -30,7 +36,13 @@ class cbm64:
                 p_nmi_cycles = self.cpu.cycles
                 #self.cpu.NMI()
 
+                #speed_percentage = self.cpu.cycles * 100 / (self.clock_frequency * (time.time() - start))
+                #print('%.2f%%' % speed_percentage, file=sys.stderr)
+
+                time.sleep(0)
+
             if self.cpu.cycles - p_irq_cycles >= self.clock_frequency / self.raster_interrupt_frequency:
+
                 p_irq_cycles = self.cpu.cycles
                 #self.cpu.IRQ()
 
