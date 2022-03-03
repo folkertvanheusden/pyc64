@@ -96,9 +96,11 @@ class bus_c64(bus_base):
             self.bs_setting = value
             return
 
-        if addr >= 0x0400 and addr < 0x0400 + 1024:  # FIXME check from d018
+        if addr >= 0x0400 and addr < 0x0400 + 1024:
             self.vic_ii.write(addr, value)
-            #print('%c' % (value if value >= 32 else (value | 64)), end='', flush=True, file=sys.stderr)
+
+        if addr >= 0xd800 and addr < 0xdbe8:
+            self.vic_ii.write(addr, value)
 
         zone = self.zones[addr // 4096]
         device = self.bank_table[((self.bs_setting & 7) | self.exp_port) & 31][zone]
