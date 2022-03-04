@@ -78,22 +78,22 @@ class vic_ii(Thread):
         pixelview = sdl2.ext.PixelView(windowsurface)
 
         palette = [
-                sdl2.ext.Color(0, 0, 0),
-                sdl2.ext.Color(255, 255, 255),
-                sdl2.ext.Color(136, 0, 0),
-                sdl2.ext.Color(170, 255, 238),
-                sdl2.ext.Color(204, 68, 204),
-                sdl2.ext.Color(0, 204, 85),
-                sdl2.ext.Color(0, 0, 170),
-                sdl2.ext.Color(238, 238, 119),
-                sdl2.ext.Color(221, 136, 85),
-                sdl2.ext.Color(102, 68, 0),
-                sdl2.ext.Color(255, 119, 119),
-                sdl2.ext.Color(51, 51, 51),
-                sdl2.ext.Color(119, 119, 119),
-                sdl2.ext.Color(170, 255, 102),
-                sdl2.ext.Color(0, 136, 255),
-                sdl2.ext.Color(187, 187, 187)
+                sdl2.ext.Color(0x00, 0x00, 0x00),
+                sdl2.ext.Color(0xFF, 0xFF, 0xFF),
+                sdl2.ext.Color(0x68, 0x37, 0x2B),
+                sdl2.ext.Color(0x70, 0xA4, 0xB2),
+                sdl2.ext.Color(0x6F, 0x3D, 0x86),
+                sdl2.ext.Color(0x58, 0x8D, 0x43),
+                sdl2.ext.Color(0x35, 0x28, 0x79),
+                sdl2.ext.Color(0xB8, 0xC7, 0x6F),
+                sdl2.ext.Color(0x6F, 0x4F, 0x25),
+                sdl2.ext.Color(0x43, 0x39, 0x00),
+                sdl2.ext.Color(0x9A, 0x67, 0x59),
+                sdl2.ext.Color(0x44, 0x44, 0x44),
+                sdl2.ext.Color(0x6C, 0x6C, 0x6C),
+                sdl2.ext.Color(0x9A, 0xD2, 0x84),
+                sdl2.ext.Color(0x6C, 0x5E, 0xB5),
+                sdl2.ext.Color(0x95, 0x95, 0x95)
                 ]
 
         line = 0
