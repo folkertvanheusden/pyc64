@@ -5,7 +5,15 @@ from bus_device import bus_device
 
 class ram(bus_device):
     def __init__(self):
-        self.ram = [ 0 for k in range(65536)]
+        self.ram = [ ]
+
+        for i in range(0, 1024):
+            pattern = 0xff if i & 1 else 0x00
+
+            for p in range(0, 64):
+                self.ram.append(pattern)
+
+        assert len(self.ram) == 65536
 
     def write_through(self):
         return False
