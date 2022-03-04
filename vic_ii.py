@@ -110,8 +110,8 @@ class vic_ii(Thread):
             if not running:
                 continue
 
-            white = sdl2.ext.Color(255, 255, 255)
-            black = sdl2.ext.Color(  0,   0,   0)
+            bg_color_index = self.bus.i_o.read(0xd021)
+            bg_color = palette[bg_color_index]
 
             for line in range(0, 25):
                 offset = line * 40
@@ -134,11 +134,7 @@ class vic_ii(Thread):
                         mask = 128
 
                         for col in range(xc, xc + 8):
-                            if char_scan_line & mask:
-                                pixelview[y][col] = fg_color
-        
-                            else:
-                                pixelview[y][col] = black
+                            pixelview[y][col] = fg_color if char_scan_line & mask else bg_color
 
                             mask >>= 1
 
