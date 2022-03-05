@@ -198,9 +198,9 @@ class cpu_6510:
         self.opcodes[0xfe] = self.INC_absolute_x
         self.opcodes[0xff] = self.ISB_absolute_x
 
-    def reset(self):
-        self.bus.reset()
+        self.reset()
 
+    def reset(self):
         self.pc = self.bus.read(0xfffc) | (self.bus.read(0xfffd) << 8)
         self.a = self.x = self.y = 0
         self.sp = 0xff
@@ -215,6 +215,7 @@ class cpu_6510:
 
     def IRQ(self):
         if (self.p & self.flags.INTERRUPT) == 0:
+            self.bus.log.print('IRQ')
             self.push_stack_16b(self.pc)
             self.opcodes[0x08](0x08)  # PHP
             self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
@@ -229,12 +230,6 @@ class cpu_6510:
             rel_addr = addr + 2 + par8
 
         bs = self.bus.read(0x0001)
-
-        idx_x = self.read16b((par8 + self.x) & 0xff)
-        idx_x_abs = self.read16b((par16 + self.x) & 0xffff)
-
-        idx_y = (self.read16b(par8) + self.y) & 0xffff
-        idx_y_abs = self.read16b((par16 + self.y) & 0xffff)
 
         self.bus.log.print_no_lf('%04x[%02x], %02x, a: %02x, x: %02x, y: %02x, flags: %02x, sp: %04x, BS: %02x ' % (addr, opcode, self.bus.read(0x200), self.a, self.x, self.y, self.p, self.sp + 0x0100, bs))
 
@@ -296,6 +291,7 @@ class cpu_6510:
             self.bus.log.print('RTS')
 
         elif opcode == 0x61:
+            idx_x = self.read16b((par8 + self.x) & 0xff)
             self.bus.log.print('ADC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0x65:
@@ -314,12 +310,15 @@ class cpu_6510:
             self.bus.log.print('JMP ($%04x)\t%04x' % (par16, self.read16b(par16)))
 
         elif opcode == 0x71:
+            idx_y = (self.read16b(par8) + self.y) & 0xffff
             self.bus.log.print('ADC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0x7d:
+            idx_x_abs = self.read16b((par16 + self.x) & 0xffff)
             self.bus.log.print('ADC $%04x,X\t%04x => %02x' % (par16, idx_x_abs, self.bus.read(idx_x_abs)))
 
         elif opcode == 0x81:
+            idx_x = self.read16b((par8 + self.x) & 0xff)
             self.bus.log.print('STA ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0x84:
@@ -344,6 +343,7 @@ class cpu_6510:
             self.bus.log.print('BCC $%04x' % rel_addr)
 
         elif opcode == 0x91:
+            idx_y = (self.read16b(par8) + self.y) & 0xffff
             self.bus.log.print('STA ($%02x),Y\t%04x' % (par8, idx_y))
 
         elif opcode == 0x98:
@@ -425,12 +425,14 @@ class cpu_6510:
             self.bus.log.print('CLD')
 
         elif opcode == 0xdd:
+            idx_x_abs = self.read16b((par16 + self.x) & 0xffff)
             self.bus.log.print('CMP ($%04x,X)\t[%02x versus %02x]' % (par16, self.a, self.bus.read(idx_x_abs)))
 
         elif opcode == 0xe0:
             self.bus.log.print('CPX #$%02x' % par8)
 
         elif opcode == 0xe1:
+            idx_x = self.read16b((par8 + self.x) & 0xff)
             self.bus.log.print('SBC ($%02x,X)\t%04x [%02x]' % (par8, idx_x, self.bus.read(idx_x)))
 
         elif opcode == 0xe6:
@@ -452,25 +454,29 @@ class cpu_6510:
             self.bus.log.print('BEQ $%04x' % rel_addr)
 
         elif opcode == 0xf1:
+            idx_y = (self.read16b(par8) + self.y) & 0xffff
             self.bus.log.print('SBC ($%02x),Y\t%04x [%02x]' % (par8, idx_y, self.bus.read(idx_y)))
 
         elif opcode == 0xf5:
+            idx_x = self.read16b((par8 + self.x) & 0xff)
             self.bus.log.print('SBC $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read(idx_x)))
 
         elif opcode == 0xf8:
             self.bus.log.print('SED')
 
         elif opcode == 0xf9:
+            idx_y_abs = self.read16b((par16 + self.y) & 0xffff)
             self.bus.log.print('SBC ($%04x),Y\t%04x [%02x]' % (par8, idx_y_abs, self.bus.read(idx_y_abs)))
 
         elif opcode == 0xfd:
+            idx_x_abs = self.read16b((par16 + self.x) & 0xffff)
             self.bus.log.print('SBC ($%04x,X)\t%04x [%02x]' % (par8, idx_x_abs, self.bus.read(idx_x_abs)))
 
         else:
             self.bus.log.print('%02x' % opcode)
 
     def tick(self):
-        #self.disassem(self.pc)
+        self.disassem(self.pc)
 
         opcode = self.read_pc()
 
