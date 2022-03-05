@@ -224,6 +224,8 @@ class cpu_6510:
             self.p |= self.flags.INTERRUPT
             self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
+            self.cycles += 7
+
     def disassem(self, addr):
         opcode = self.bus.read(addr)
         par8 = self.bus.read(addr + 1)
@@ -512,7 +514,7 @@ class cpu_6510:
             self.bus.log.print('? %02x' % opcode)
 
     def tick(self):
-        self.disassem(self.pc)
+        #self.disassem(self.pc)
 
         opcode = self.read_pc()
 
