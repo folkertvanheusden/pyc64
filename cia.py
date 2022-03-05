@@ -14,6 +14,10 @@ class cia(bus_device):
         self.b_latch = self.timer_b_value = 65535
 
         self.int_mask = 0
+
+        self.timer_a_control = 128  # 50Hz default
+        self.timer_b_control = 0
+
         self.int_data = 0
 
         self.cia_idx = None
@@ -24,7 +28,8 @@ class cia(bus_device):
         self.timer_a_value -= 1
 
         if self.timer_a_value <= 0:
-            self.timer_a_value = self.a_latch
+            if (self.timer_a_control & (1 << 3)) == 0:
+                self.timer_a_value = self.a_latch
 
             self.int_data |= 1 << 0
 
@@ -36,7 +41,8 @@ class cia(bus_device):
         self.timer_b_value -= 1
 
         if self.timer_b_value <= 0:
-            self.timer_b_value = self.b_latch
+            if (self.timer_b_control & (1 << 3)) == 0:
+                self.timer_b_value = self.b_latch
 
             self.int_data |= 1 << 1
 
@@ -71,7 +77,10 @@ class cia(bus_device):
             return rc
 
         elif register == 14:
-            return 1 << 7  # 50Hz
+            return self.timer_a_control
+
+        elif register == 15:
+            return self.timer_b_control
 
         return self.registers[register]
 
@@ -96,3 +105,9 @@ class cia(bus_device):
 
         elif register == 13:  # 0x0d
             self.int_mask = val
+
+        elif register == 14:
+            self.timer_a_control = val
+
+        elif register == 15:
+            self.timer_b_control = val
