@@ -1,19 +1,32 @@
 # (C) 2020-2022 by Folkert van Heusden <mail@vanheusden.com>
 # License: Apache License v2.0
 
+from datetime import datetime
 from ram import ram
 
 class filelf():
     def __init__(self, name, mode = 'r'):
         self.fh = open(name, mode)
 
+        self.ts = True 
+
+    def emit_ts(self):
+        if self.ts:
+            self.fh.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') + '] ')
+
     def print(self, string):
-        #self.fh.write(string + '\n')
-        pass
+        self.emit_ts()
+
+        self.ts = True
+
+        self.fh.write(string + '\n')
 
     def print_no_lf(self, string):
-        #self.fh.write(string)
-        pass
+        self.emit_ts()
+
+        self.ts = False
+
+        self.fh.write(string)
 
 class bus_base:
     def __init__(self):

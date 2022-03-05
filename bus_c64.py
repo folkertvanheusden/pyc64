@@ -6,10 +6,14 @@ from basic_rom import basic_rom
 from cartridge_hi import cartridge_hi
 from cartridge_lo import cartridge_lo
 from character_rom import character_rom
+from cia1 import cia1
+from cia2 import cia2
+from cpu_6510 import cpu_6510
 from i_o import i_o
 from kernal_rom import kernal_rom
 from nothing import nothing
 from ram import ram
+import queue
 import sys
 from vic_ii import vic_ii
 
@@ -26,6 +30,12 @@ class bus_c64(bus_base):
         self.nothing = nothing()
         self.ram = ram()
         self.vic_ii = vic_ii()
+        self.cia1 = cia1(self)
+        self.cia2 = cia2(self)
+
+        self.event_queue = queue.Queue()
+
+        self.bs_setting = 31  # default
 
         self.bank_table = [ None ] * 32
         self.bank_table[0] = [ self.ram, self.ram, self.ram, self.ram, self.ram, self.ram, self.ram ]
@@ -75,12 +85,23 @@ class bus_c64(bus_base):
             self.exp_port = 0x18
 
         self.vic_ii.begin(self)
+        self.vic_ii.start()
 
-    def get_vic_ii(self):
-        return self.vic_ii
+        self.cpu = cpu_6510(self)
 
     def reset(self):
-        self.bs_setting = 31  # default
+        self.bs_setting = 31
+
+        self.cpu.reset()
+
+    def tick(self):
+        self.cpu.tick()
+
+        self.vic_ii.tick()
+
+        self.cia1.tick()
+
+        self.cia2.tick()
 
     def read(self, addr):
         if addr == 0x0001:  # bank switch register

@@ -15,6 +15,8 @@ class vic_ii(Thread):
 
         self.window = curses.initscr()
 
+        self.update = False
+
         curses.start_color()
         curses.init_pair(0 + 1, curses.COLOR_WHITE  , curses.COLOR_BLACK)
         curses.init_pair(1 + 1, curses.COLOR_BLACK  , curses.COLOR_WHITE)
@@ -60,12 +62,16 @@ class vic_ii(Thread):
 
             self.window.addch(addr // 40, addr % 40, value)
 
+            self.update = True
+
         elif addr >= 0xd800 and addr < 0xdbe8:  # color ram
             addr -= 0xd800
 
             self.color_ram[addr] = value
 
             #self.window.chgat(addr // 40, addr % 40, curses.color_pair((value & 7) + 1))
+
+            self.update = True
 
     def run(self):
         sdl2.ext.init()
@@ -107,8 +113,17 @@ class vic_ii(Thread):
                 if event.type == sdl2.SDL_QUIT:
                     running = False
 
+                elif event.type == sdl2.SDL_KEYDOWN or event.type == sdl2.SDL_KEYUP:
+                    self.bus.event_queue.put(event)
+
             if not running:
                 continue
+
+            if self.update == False:
+                sdl2.SDL_Delay(1);
+                continue
+
+            self.update = False
 
             bg_color_index = self.bus.i_o.read(0xd021)
             bg_color = palette[bg_color_index]
