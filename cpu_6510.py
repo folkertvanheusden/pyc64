@@ -210,14 +210,16 @@ class cpu_6510:
 
     def NMI(self):
         self.push_stack_16b(self.pc)
-        self.opcodes[0x08](0x08)  # PHP
+        self.push_stack(self.p)
         self.pc = self.bus.read(0xfffa) | (self.bus.read(0xfffb) << 8)
 
     def IRQ(self):
         if (self.p & self.flags.INTERRUPT) == 0:
             self.bus.log.print('IRQ')
             self.push_stack_16b(self.pc)
-            self.opcodes[0x08](0x08)  # PHP
+            self.p &= ~self.flags.BREAK
+            self.push_stack(self.p)
+            self.p |= self.flags.INTERRUPT
             self.pc = self.bus.read(0xfffe) | (self.bus.read(0xffff) << 8)
 
     def disassem(self, addr):
