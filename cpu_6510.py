@@ -352,6 +352,9 @@ class cpu_6510:
             idx_y = (self.read16b(par8) + self.y) & 0xffff
             self.bus.log.print('STA ($%02x),Y\t%04x' % (par8, idx_y))
 
+        elif opcode == 0x94:
+            self.bus.log.print('STY $%04x,X\t%04x' % (par16, (par16 + self.x) & 0xffff))
+
         elif opcode == 0x98:
             self.bus.log.print('TYA')
 
