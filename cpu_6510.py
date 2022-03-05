@@ -461,6 +461,9 @@ class cpu_6510:
         elif opcode == 0xe6:
             self.bus.log.print('INC $%02x' % par8)
 
+        elif opcode == 0xe8:
+            self.bus.log.print('INX')
+
         elif opcode == 0xe9:
             self.bus.log.print('SBC #$%02x' % par8)
 
