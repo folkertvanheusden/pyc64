@@ -210,7 +210,9 @@ class cpu_6510:
 
     def NMI(self):
         self.push_stack_16b(self.pc)
+        self.p &= ~self.flags.BREAK
         self.push_stack(self.p)
+        self.p |= self.flags.INTERRUPT
         self.pc = self.bus.read(0xfffa) | (self.bus.read(0xfffb) << 8)
 
     def IRQ(self):
