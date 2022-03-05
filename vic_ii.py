@@ -113,6 +113,9 @@ class vic_ii(Thread):
                 if event.type == sdl2.SDL_QUIT:
                     running = False
 
+                elif event.type == sdl2.SDL_MOUSEBUTTONDOWN:
+                    self.bus.cpu.pc = 2061
+
                 elif event.type == sdl2.SDL_KEYDOWN or event.type == sdl2.SDL_KEYUP:
                     self.bus.event_queue.put(event)
 
@@ -125,7 +128,7 @@ class vic_ii(Thread):
 
             self.update = False
 
-            bg_color_index = self.bus.i_o.read(0xd021)
+            bg_color_index = self.bus.i_o.read(0xd021) & 15
             bg_color = palette[bg_color_index]
 
             for line in range(0, 25):
