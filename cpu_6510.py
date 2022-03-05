@@ -382,6 +382,9 @@ class cpu_6510:
         elif opcode == 0xa6:
             self.bus.log.print('LDX $%02x' % par8)
 
+        elif opcode == 0xa8:
+            self.bus.log.print('TAY')
+
         elif opcode == 0xa9:
             self.bus.log.print('LDA #$%02x' % par8)
 
