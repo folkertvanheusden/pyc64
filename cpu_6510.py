@@ -266,6 +266,9 @@ class cpu_6510:
         elif opcode == 0x29:
             self.bus.log.print('AND #$%02x' % par8)
 
+        elif opcode == 0x2a:
+            self.bus.log.print('ROL A')
+
         elif opcode == 0x30:
             self.bus.log.print('BMI $%04x' % rel_addr)
 
@@ -333,6 +336,9 @@ class cpu_6510:
         elif opcode == 0x88:
             self.bus.log.print('DEY')
 
+        elif opcode == 0x8a:
+            self.bus.log.print('TXA')
+
         elif opcode == 0x8d:
             self.bus.log.print('STA $%04x' % par16)
 
@@ -348,6 +354,9 @@ class cpu_6510:
 
         elif opcode == 0x98:
             self.bus.log.print('TYA')
+
+        elif opcode == 0x99:
+            self.bus.log.print('STA $%04x,Y\t%04x' % (par16, (par16 + self.y) & 0xffff))
 
         elif opcode == 0x9a:
             self.bus.log.print('TXS')
@@ -382,6 +391,10 @@ class cpu_6510:
         elif opcode == 0xb0:
             self.bus.log.print('BCS $%04x' % rel_addr)
 
+        elif opcode == 0xb1:
+            idx_y = (self.read16b(par8) + self.y) & 0xffff
+            self.bus.log.print('LDA ($%02x),Y\t%04x' % (par8, idx_y))
+
         elif opcode == 0xb4:
             self.bus.log.print('LDY $%02x,X' % par8)
 
@@ -390,6 +403,9 @@ class cpu_6510:
 
         elif opcode == 0xb6:
             self.bus.log.print('LDX $%02x,Y' % par8)
+
+        elif opcode == 0xb9:
+            self.bus.log.print('LDA $%04x,y' % par16)
 
         elif opcode == 0xba:
             self.bus.log.print('TSX')
@@ -406,6 +422,9 @@ class cpu_6510:
         elif opcode == 0xc6:
             self.bus.log.print('DEC $%02x' % par8)
 
+        elif opcode == 0xc8:
+            self.bus.log.print('INY')
+
         elif opcode == 0xc9:
             self.bus.log.print('CMP #$%02x' % par8)
 
@@ -417,6 +436,10 @@ class cpu_6510:
 
         elif opcode == 0xd0:
             self.bus.log.print('BNE $%04x' % rel_addr)
+
+        elif opcode == 0xd1:
+            idx_y = (self.read16b(par8) + self.y) & 0xffff
+            self.bus.log.print('CMP ($%02x),Y\t%04x' % (par8, idx_y))
 
         elif opcode == 0xd5:
             self.bus.log.print('CMP $%02x,X\t[%02x versus %02x]' % (par8, self.a, self.bus.read((par8 + self.x) & 0xff)))
@@ -473,7 +496,7 @@ class cpu_6510:
             self.bus.log.print('SBC ($%04x,X)\t%04x [%02x]' % (par8, idx_x_abs, self.bus.read(idx_x_abs)))
 
         else:
-            self.bus.log.print('%02x' % opcode)
+            self.bus.log.print('? %02x' % opcode)
 
     def tick(self):
         self.disassem(self.pc)
