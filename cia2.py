@@ -11,4 +11,5 @@ class cia2(cia):
         self.cia_idx = 2
 
     def trigger_interrupt(self):
-        self.bus.log.print('NMI')
+        #self.bus.log.print('NMI')
+        pass
