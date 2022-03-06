@@ -29,7 +29,7 @@ class cbm64:
 
             fh.close()
 
-            self.bus.cpu.pc = prg_addr
+            #self.bus.cpu.pc = prg_addr
 
     def reset(self):
         self.cpu.reset()
@@ -38,6 +38,8 @@ class cbm64:
         while True:
             self.bus.tick()
 
-c64 = cbm64()
+#c64 = cbm64()
 #c64 = cbm64('matrix_bugfix.prg', 2061)
+#c64 = cbm64('AllSuiteA.prg', 2061)
+c64 = cbm64('docs/ciadiag.prg', 2064)
 c64.run()

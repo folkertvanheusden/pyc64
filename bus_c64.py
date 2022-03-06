@@ -87,6 +87,8 @@ class bus_c64(bus_base):
         self.vic_ii.begin(self)
         self.vic_ii.start()
 
+        self.cia1.start()
+
         self.cpu = cpu_6510(self)
 
     def reset(self):

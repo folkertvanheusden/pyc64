@@ -135,7 +135,7 @@ class vic_ii(Thread):
                     running = False
 
                 elif event.type == sdl2.SDL_MOUSEBUTTONDOWN:
-                    self.bus.cpu.pc = 2061
+                    self.bus.cpu.pc = 2064
 
                 elif event.type == sdl2.SDL_KEYDOWN or event.type == sdl2.SDL_KEYUP:
                     self.bus.event_queue.put(event)
