@@ -12,6 +12,7 @@ class vic_ii(Thread):
 
         self.screen_ram = [ 0 ] * 1024
         self.color_ram  = [ 0 ] * 1000
+        self.registers  = [ 0 ] * 64
 
         self.window = curses.initscr()
 
@@ -49,6 +50,19 @@ class vic_ii(Thread):
         #org_value = self.bus.read(0xd011)
         #self.bus.write(0xd011, org_value | ((self.raster_line & 0x0100) >> 1))
 
+    def read(self, addr):
+        if addr >= 0x0400 and addr < 0x0800:  # screen ram
+            return self.screen_ram[addr - 0x0400]
+            
+        elif addr >= 0xd000 and addr < 0xd040:
+            return self.registers[addr - 0xd000]
+
+        elif addr >= 0xd800 and addr < 0xdbe8:  # color ram
+            return self.color_ram[addr - 0xd800]
+
+        else:
+            self.bus.log.print('vic-ii read from %04x' % addr)
+
     def write(self, addr, value):
         if addr >= 0x0400 and addr < 0x0800:  # screen ram
             addr -= 0x0400
@@ -64,6 +78,10 @@ class vic_ii(Thread):
 
             self.update = True
 
+        elif addr >= 0xd000 and addr < 0xd040:
+            self.bus.log.print('vic-ii set register %02x to %02x' % (addr - 0xd000, value))
+            self.registers[addr - 0xd000] = value
+
         elif addr >= 0xd800 and addr < 0xdbe8:  # color ram
             addr -= 0xd800
 
@@ -72,6 +90,9 @@ class vic_ii(Thread):
             #self.window.chgat(addr // 40, addr % 40, curses.color_pair((value & 7) + 1))
 
             self.update = True
+
+        else:
+            self.bus.log.print('vic-ii write %02x to %04x' % (value, addr))
 
     def run(self):
         sdl2.ext.init()
@@ -128,33 +149,40 @@ class vic_ii(Thread):
 
             self.update = False
 
-            bg_color_index = self.bus.i_o.read(0xd021) & 15
-            bg_color = palette[bg_color_index]
+            screen_mode = ((self.registers[0x0011] >> 4) & 6) | ((self.registers[0x0016] >> 4) & 1)
+            self.bus.log.print('vic-ii: screen_mode: %d' % screen_mode)
 
-            for line in range(0, 25):
-                offset = line * 40
+            if screen_mode == 0:
+                bg_color_index = self.bus.i_o.read(0xd021) & 15
+                bg_color = palette[bg_color_index]
 
-                for x in range(0, 40):
-                    b = self.bus.read(0x0400 + offset + x)
+                for line in range(0, 25):
+                    offset = line * 40
 
-                    addr_chargen = 0xd000 + b * 8
+                    for x in range(0, 40):
+                        b = self.bus.read(0x0400 + offset + x)
 
-                    fg_color_index = self.color_ram[offset + x] & 15
-                    fg_color = palette[fg_color_index]
+                        addr_chargen = 0xd000 + b * 8
 
-                    for row in range(0, 8):
-                        char_scan_line = self.bus.character_rom.read(addr_chargen + row)
+                        fg_color_index = self.color_ram[offset + x] & 15
+                        fg_color = palette[fg_color_index]
 
-                        y = line * 8 + row
+                        for row in range(0, 8):
+                            char_scan_line = self.bus.character_rom.read(addr_chargen + row)
 
-                        xc = x * 8
+                            y = line * 8 + row
 
-                        mask = 128
+                            xc = x * 8
 
-                        for col in range(xc, xc + 8):
-                            pixelview[y][col] = fg_color if char_scan_line & mask else bg_color
+                            mask = 128
 
-                            mask >>= 1
+                            for col in range(xc, xc + 8):
+                                pixelview[y][col] = fg_color if char_scan_line & mask else bg_color
+
+                                mask >>= 1
+
+            else:
+                pass
 
             del pixelview
             pixelview = sdl2.ext.PixelView(windowsurface)

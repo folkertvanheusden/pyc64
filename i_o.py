@@ -17,6 +17,9 @@ class i_o(bus_device):
         if addr == 0xd012:
             return 0x00
 
+        if addr >= 0xd000 and addr <= 0xd040:
+            return self.bus.vic_ii.read(addr)
+
         if addr & 0xff00 == 0xdc00:
             return self.bus.cia1.read(addr & 0x000f)
 
@@ -30,11 +33,17 @@ class i_o(bus_device):
         return self.data[addr]
 
     def write(self, addr, value):
+        if addr >= 0xd000 and addr <= 0xd040:
+            self.bus.vic_ii.write(addr, value)
+            return
+
         if addr & 0xff00 == 0xdc00:
-            return self.bus.cia1.write(addr, value)
+            self.bus.cia1.write(addr, value)
+            return
 
         if addr & 0xff00 == 0xdd00:
-            return self.bus.cia2.write(addr, value)
+            self.bus.cia2.write(addr, value)
+            return
 
         self.bus.log.print('I/O write to %04x: %02x' % (addr, value))
 
