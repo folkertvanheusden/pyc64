@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: Apache License v2.0
+# License: CC0
 
 from cartridge import cartridge
 

@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: Apache License v2.0
+# License: CC0
 
 from bus_test import bus_test
 from cpu_6510 import cpu_6510

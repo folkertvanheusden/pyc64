@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# released under Apache License v2.0
+# released under CC0
 
 from bus_base import bus_base
 

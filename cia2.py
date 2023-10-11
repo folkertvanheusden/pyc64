@@ -1,5 +1,5 @@
 # (C) 2022 by Folkert van Heusden <mail@vanheusden.com>
-# License: Apache License v2.0
+# License: CC0
 
 from bus_device import bus_device
 from cia import cia

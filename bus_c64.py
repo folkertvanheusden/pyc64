@@ -1,5 +1,5 @@
 # (C) 2020 by Folkert van Heusden <mail@vanheusden.com>
-# License: Apache License v2.0
+# License: CC0
 
 from bus_base import bus_base
 from basic_rom import basic_rom

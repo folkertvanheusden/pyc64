@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 # (C) 2022 by Folkert van Heusden <mail@vanheusden.com>
-# License: Apache License v2.0
+# License: CC0
 
 from bus_c64 import bus_c64
 import sys
@@ -38,8 +38,8 @@ class cbm64:
         while True:
             self.bus.tick()
 
-#c64 = cbm64()
+c64 = cbm64()
 #c64 = cbm64('matrix_bugfix.prg', 2061)
 #c64 = cbm64('AllSuiteA.prg', 2061)
-c64 = cbm64('docs/ciadiag.prg', 2064)
+#c64 = cbm64('docs/ciadiag.prg', 2064)
 c64.run()
