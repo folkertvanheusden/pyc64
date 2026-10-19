@@ -130,26 +130,33 @@ class cpu_6510:
         self.opcodes[0xa0] = self.LDY_immediate
         self.opcodes[0xa1] = self.LDA_indirect_x
         self.opcodes[0xa2] = self.LDX_immediate
+        self.opcodes[0xa3] = self.LAX_indirect_x
         self.opcodes[0xa4] = self.LDY_zeropage
         self.opcodes[0xa5] = self.LDA_zeropage
         self.opcodes[0xa6] = self.LDX_zeropage
+        self.opcodes[0xa7] = self.LAX_zeropage
         self.opcodes[0xa8] = self.TAY
         self.opcodes[0xa9] = self.LDA_immediate
         self.opcodes[0xaa] = self.TAX
+        self.opcodes[0xab] = self.LAX_immediate
         self.opcodes[0xac] = self.LDY_absolute
         self.opcodes[0xad] = self.LDA_absolute
         self.opcodes[0xae] = self.LDX_absolute
+        self.opcodes[0xaf] = self.LAX_absolute
         self.opcodes[0xb0] = self.BCS
         self.opcodes[0xb1] = self.LDA_indirect_y
+        self.opcodes[0xb3] = self.LAX_indirect_y
         self.opcodes[0xb4] = self.LDY_zeropage_x
         self.opcodes[0xb5] = self.LDA_zeropage_x
         self.opcodes[0xb6] = self.LDX_zeropage_y
+        self.opcodes[0xb7] = self.LAX_zeropage_y
         self.opcodes[0xb8] = self.CLV
         self.opcodes[0xb9] = self.LDA_absolute_y
         self.opcodes[0xba] = self.TSX
         self.opcodes[0xbc] = self.LDY_absolute_x
         self.opcodes[0xbd] = self.LDA_absolute_x
         self.opcodes[0xbe] = self.LDX_absolute_y
+        self.opcodes[0xbf] = self.LAX_absolute_x
         self.opcodes[0xc0] = self.CMP_immediate
         self.opcodes[0xc1] = self.CMP_indirect_x
         self.opcodes[0xc2] = self.NOP_immediate
@@ -881,6 +888,12 @@ class cpu_6510:
         self.set_NZ_flags(self.a)
         self.cycles += 2
 
+    def LAX_immediate(self, opcode):
+        self.a = self.read_pc()
+        self.x = self.a
+        self.set_NZ_flags(self.a)
+        self.cycles += 2
+
     def LDX_immediate(self, opcode):
         self.x = self.read_pc()
         self.set_NZ_flags(self.x)
@@ -898,6 +911,12 @@ class cpu_6510:
 
     def LDX_zeropage(self, opcode):
         self.x = self.data_zeropage()
+        self.set_NZ_flags(self.x)
+        self.cycles += 3
+
+    def LAX_zeropage(self, opcode):
+        self.x = self.data_zeropage()
+        self.a = self.x
         self.set_NZ_flags(self.x)
         self.cycles += 3
 
@@ -921,8 +940,20 @@ class cpu_6510:
         self.set_NZ_flags(self.x)
         self.cycles += 4
 
+    def LAX_zeropage_y(self, opcode):
+        self.x = self.data_zeropage_y()
+        self.a = self.x
+        self.set_NZ_flags(self.x)
+        self.cycles += 4
+
     def LDA_absolute(self, opcode):
         self.a = self.data_absolute()
+        self.set_NZ_flags(self.a)
+        self.cycles += 4
+
+    def LAX_absolute(self, opcode):
+        self.a = self.data_absolute()
+        self.x = self.a
         self.set_NZ_flags(self.a)
         self.cycles += 4
 
@@ -938,6 +969,12 @@ class cpu_6510:
 
     def LDA_absolute_x(self, opcode):
         self.a = self.data_absolute_x()
+        self.set_NZ_flags(self.a)
+        self.cycles += 4
+
+    def LAX_absolute_x(self, opcode):
+        self.a = self.data_absolute_x()
+        self.x = self.a
         self.set_NZ_flags(self.a)
         self.cycles += 4
 
@@ -961,8 +998,20 @@ class cpu_6510:
         self.set_NZ_flags(self.a)
         self.cycles += 6
 
+    def LAX_indirect_x(self, opcode):
+        self.a = self.data_indirect_x()
+        self.x = self.a
+        self.set_NZ_flags(self.a)
+        self.cycles += 6
+
     def LDA_indirect_y(self, opcode):
         self.a = self.data_indirect_y()
+        self.set_NZ_flags(self.a)
+        self.cycles += 5
+
+    def LAX_indirect_y(self, opcode):
+        self.a = self.data_indirect_y()
+        self.x = self.a
         self.set_NZ_flags(self.a)
         self.cycles += 5
 
