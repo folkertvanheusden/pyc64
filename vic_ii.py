@@ -138,7 +138,7 @@ class vic_ii(Thread):
                     self.bus.cpu.pc = 2064
 
                 elif event.type in (sdl2.SDL_KEYDOWN, sdl2.SDL_KEYUP):
-                    self.bus.event_queue.put(event)
+                    self.bus.event_queue.put((event.type, event.key.keysym.sym))
 
                 else:
                     self.bus.log.print(f'vic-ii: unknown SDL2 event: {event.type}')

@@ -7,6 +7,90 @@ import queue
 import sdl2
 from threading import Thread
 
+rows = (
+        (
+            (sdl2.SDLK_RETURN, 2),
+        ),
+        (
+            (sdl2.SDLK_3, 1),
+            (sdl2.SDLK_w, 2),
+            (sdl2.SDLK_a, 4),
+            (sdl2.SDLK_4, 8),
+            (sdl2.SDLK_z, 16),
+            (sdl2.SDLK_s, 32),
+            (sdl2.SDLK_e, 64),
+            (sdl2.SDLK_LSHIFT, 128),
+        ),
+        (
+            (sdl2.SDLK_5, 1),
+            (sdl2.SDLK_r, 2),
+            (sdl2.SDLK_d, 4),
+            (sdl2.SDLK_6, 8),
+            (sdl2.SDLK_c, 16),
+            (sdl2.SDLK_f, 32),
+            (sdl2.SDLK_t, 64),
+            (sdl2.SDLK_x, 128),
+        ),
+        (
+            (sdl2.SDLK_7, 1),
+            (sdl2.SDLK_y, 2),
+            (sdl2.SDLK_g, 4),
+            (sdl2.SDLK_8, 8),
+            (sdl2.SDLK_b, 16),
+            (sdl2.SDLK_h, 32),
+            (sdl2.SDLK_u, 64),
+            (sdl2.SDLK_v, 128),
+        ),
+        (
+            (sdl2.SDLK_9, 1),
+            (sdl2.SDLK_i, 2),
+            (sdl2.SDLK_j, 4),
+            (sdl2.SDLK_0, 8),
+            (sdl2.SDLK_m, 16),
+            (sdl2.SDLK_k, 32),
+            (sdl2.SDLK_o, 64),
+            (sdl2.SDLK_n, 128),
+        ),
+        (
+#            (sdl2.SDLK_+, 1),
+            (sdl2.SDLK_p, 2),
+            (sdl2.SDLK_l, 4),
+#            (sdl2.SDLK_MIN, 8),
+#            (sdl2.SDLK_DOT, 16),
+#            (sdl2.SDLK_k, 32),
+#            (sdl2.SDLK_o, 64),
+#            (sdl2.SDLK_n, 128),
+        ),
+        (
+#            (sdl2.SDLK_9, 1),
+#            (sdl2.SDLK_i, 2),
+#            (sdl2.SDLK_j, 4),
+#            (sdl2.SDLK_0, 8),
+#            (sdl2.SDLK_m, 16),
+#            (sdl2.SDLK_k, 32),
+#            (sdl2.SDLK_o, 64),
+#            (sdl2.SDLK_n, 128),
+        ),
+        (
+            (sdl2.SDLK_1, 1),
+#            (sdl2.SDLK_p, 2),
+#            (sdl2.SDLK_l, 4),
+            (sdl2.SDLK_2, 8),
+            (sdl2.SDLK_SPACE, 16),
+            (sdl2.SDLK_c, 32),
+            (sdl2.SDLK_q, 64),
+#            (sdl2.SDLK_n, 128),
+        ),
+       )
+
+def ffs(x):
+    """Returns the index, counting from 0, of the
+    least significant set bit in `x`.
+    """
+    return (x&-x).bit_length()-1
+
+assert(len(rows) == 8)
+
 class cia1(cia, Thread):
     def __init__(self, bus):
         Thread.__init__(self)
@@ -14,7 +98,7 @@ class cia1(cia, Thread):
 
         self.cia_idx = 1
 
-        self.keys_pressed = dict()
+        self.keys_pressed = set()
 
     def trigger_interrupt(self):
         self.bus.cpu.IRQ()
@@ -23,104 +107,27 @@ class cia1(cia, Thread):
         while True:
             event = self.bus.event_queue.get()
 
-            if event.type == sdl2.SDL_KEYDOWN:
-                self.keys_pressed[event.key.keysym.sym] = True
+            if event[0] == sdl2.SDL_KEYDOWN:
+                self.keys_pressed.add(event[1])
+                self.bus.log.print('%d is pressed' % event[1])
 
-                self.bus.log.print('%d is pressed' % event.key.keysym.sym)
-
-            elif event.type == sdl2.SDL_KEYUP:
-                self.keys_pressed[event.key.keysym.sym] = False
-
-                self.bus.log.print('%d is no longer pressed' % event.key.keysym.sym)
+            elif event[0] == sdl2.SDL_KEYUP:
+                self.keys_pressed.remove(event[1])
+                self.bus.log.print('%d is no longer pressed' % event[1])
 
     def read(self, addr):
         register = addr & 0x000f
 
         if register == 1:
-            if self.registers[2] == 0xff and self.registers[3] == 0x00:
-                self.bus.log.print('check down %02x | %s' % (self.registers[0], self.keys_pressed))
-
-                if self.registers[0] == 0xfd and sdl2.SDLK_a in self.keys_pressed and self.keys_pressed[sdl2.SDLK_a] == True:
-                    return 0xfb       # 'a'
-
-                elif self.registers[0] == 0xf7 and 66 in self.keys_pressed and self.keys_pressed[66] == True:
-                    return 0xef       # 'b'
-
-                elif self.registers[0] == 0xfb and 67 in self.keys_pressed and self.keys_pressed[67] == True:
-                    return 0xef       # 'c'
-
-                elif self.registers[0] == 0x7f and sdl2.SDLK_1 in self.keys_pressed and self.keys_pressed[sdl2.SDLK_1] == True:
-                    return 0xfe       # '1'
-
-                elif self.registers[0] == 0x7f and sdl2.SDLK_2 in self.keys_pressed and self.keys_pressed[sdl2.SDLK_2] == True:
-                    return 0xf7       # '2'
-
-                elif self.registers[0] == 0x7d and 51 in self.keys_pressed and self.keys_pressed[51] == True:
-                    return 0xfe       # '3'
-
-                elif self.registers[0] == 0x7f and 81 in self.keys_pressed and self.keys_pressed[81] == True:
-                    return 0xbf       # 'q'
-
-                elif self.registers[0] == 0x7f and 27 in self.keys_pressed and self.keys_pressed[27] == True:
-                    return 0x7f       # 'run/stop'
-
-                elif self.registers[0] == 0x7f and sdl2.SDLK_RETURN in self.keys_pressed and self.keys_pressed[sdl2.SDLK_RETURN] == True:
-                    return 0xfd       # '←'
-
-                elif self.registers[0] == 0x7f and 32 in self.keys_pressed and self.keys_pressed[32] == True:
-                    return 0xef       # ' '
-
-                elif self.registers[0] == 0xfb and 88 in self.keys_pressed and self.keys_pressed[88] == True:
-                    return 0x7f       # 'x'
-
-                elif self.registers[0] == 0xf7 and 86 in self.keys_pressed and self.keys_pressed[86] == True:
-                    return 0x7f       # 'v'
-
-                elif self.registers[0] == 0xef and 78 in self.keys_pressed and self.keys_pressed[78] == True:
-                    return 0x7f       # 'n'
-
-            if self.registers[2] == 0xff and self.registers[3] == 0x00:
-                self.bus.log.print('check up')
-
-                if self.registers[0] == 0xfd and 65 in self.keys_pressed and self.keys_pressed[65] == False:
-                    return 0xff       # 'a'
-
-                elif self.registers[0] == 0xf7 and 66 in self.keys_pressed and self.keys_pressed[66] == False:
-                    return 0xff       # 'b'
-
-                elif self.registers[0] == 0xfb and 67 in self.keys_pressed and self.keys_pressed[67] == False:
-                    return 0xff       # 'c'
-
-                elif self.registers[0] == 0x7f and 49 in self.keys_pressed and self.keys_pressed[49] == False:
-                    return 0xff       # '1'
-
-                elif self.registers[0] == 0x7f and 50 in self.keys_pressed and self.keys_pressed[50] == False:
-                    return 0xff       # '2'
-
-                elif self.registers[0] == 0x7d and 51 in self.keys_pressed and self.keys_pressed[51] == False:
-                    return 0xff       # '3'
-
-                elif self.registers[0] == 0x7f and 81 in self.keys_pressed and self.keys_pressed[81] == False:
-                    return 0xff       # 'q'
-
-                elif self.registers[0] == 0x7f and 27 in self.keys_pressed and self.keys_pressed[27] == False:
-                    return 0xff       # 'run/stop'
-
-                elif self.registers[0] == 0x7f and sdl2.SDLK_RETURN in self.keys_pressed and self.keys_pressed[sdl2.SDLK_RETURN] == False:
-                    return 0xff       # '←'
-
-                elif self.registers[0] == 0x7f and 32 in self.keys_pressed and self.keys_pressed[32] == False:
-                    return 0xff       # ' '
-
-                elif self.registers[0] == 0xfb and 88 in self.keys_pressed and self.keys_pressed[88] == False:
-                    return 0xff       # 'x'
-
-                elif self.registers[0] == 0xf7 and 86 in self.keys_pressed and self.keys_pressed[86] == False:
-                    return 0xff       # 'v'
-
-                elif self.registers[0] == 0xef and 78 in self.keys_pressed and self.keys_pressed[78] == False:
-                    return 0xff       # 'n'
-
-                return 0xff
+            # if self.registers[2] == 0xff and self.registers[3] == 0x00:
+            if True:
+                pattern = 0
+                for row in range(8):
+                    if self.registers[0] & (1 << row):
+                        continue
+                    for keys in rows[row]:
+                        if keys[0] in self.keys_pressed:
+                            pattern |= keys[1]
+                return pattern ^ 255
 
         return cia.read(self, addr)
