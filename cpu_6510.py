@@ -36,8 +36,8 @@ class cpu_6510:
         self.opcodes[0x16] = self.ASL_zeropage_x
         self.opcodes[0x18] = self.CLC
         self.opcodes[0x19] = self.ORA_absolute_y
-        self.opcodes[0x1A] = self.NOP
-        self.opcodes[0x1C] = self.NOP_absolute
+        self.opcodes[0x1a] = self.NOP
+        self.opcodes[0x1c] = self.NOP_absolute
         self.opcodes[0x1d] = self.ORA_absolute_x
         self.opcodes[0x1e] = self.ASL_absolute_x
         self.opcodes[0x20] = self.JSR
@@ -58,8 +58,8 @@ class cpu_6510:
         self.opcodes[0x36] = self.ROL
         self.opcodes[0x38] = self.SEC
         self.opcodes[0x39] = self.AND_absolute_y
-        self.opcodes[0x3A] = self.NOP
-        self.opcodes[0x3C] = self.NOP_absolute
+        self.opcodes[0x3a] = self.NOP
+        self.opcodes[0x3c] = self.NOP_absolute
         self.opcodes[0x3d] = self.AND_absolute_x
         self.opcodes[0x3e] = self.ROL
         self.opcodes[0x40] = self.RTI
@@ -80,8 +80,8 @@ class cpu_6510:
         self.opcodes[0x56] = self.LSR_zeropage_x
         self.opcodes[0x58] = self.CLI
         self.opcodes[0x59] = self.EOR_absolute_y
-        self.opcodes[0x5A] = self.NOP
-        self.opcodes[0x5C] = self.NOP_absolute
+        self.opcodes[0x5a] = self.NOP
+        self.opcodes[0x5c] = self.NOP_absolute
         self.opcodes[0x5d] = self.EOR_absolute_x
         self.opcodes[0x5e] = self.LSR_absolute_x
         self.opcodes[0x60] = self.RTS
@@ -102,8 +102,8 @@ class cpu_6510:
         self.opcodes[0x76] = self.ROR
         self.opcodes[0x78] = self.SEI
         self.opcodes[0x79] = self.ADC_absolute_y
-        self.opcodes[0x7A] = self.NOP
-        self.opcodes[0x7C] = self.NOP_absolute
+        self.opcodes[0x7a] = self.NOP
+        self.opcodes[0x7c] = self.NOP_absolute
         self.opcodes[0x7d] = self.ADC_absolute_x
         self.opcodes[0x7e] = self.ROR
         self.opcodes[0x80] = self.NOP_immediate
@@ -520,8 +520,8 @@ class cpu_6510:
 
         if not self.opcodes[opcode]:
             print('%02x' % opcode)
-
-        self.opcodes[opcode](opcode)
+        else:
+            self.opcodes[opcode](opcode)
 
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
