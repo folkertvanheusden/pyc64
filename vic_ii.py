@@ -137,8 +137,11 @@ class vic_ii(Thread):
                 elif event.type == sdl2.SDL_MOUSEBUTTONDOWN:
                     self.bus.cpu.pc = 2064
 
-                elif event.type == sdl2.SDL_KEYDOWN or event.type == sdl2.SDL_KEYUP:
+                elif event.type in (sdl2.SDL_KEYDOWN, sdl2.SDL_KEYUP):
                     self.bus.event_queue.put(event)
+
+                else:
+                    self.bus.log.print(f'vic-ii: unknown SDL2 event: {event.type}')
 
             if not running:
                 continue
