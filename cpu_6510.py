@@ -109,20 +109,24 @@ class cpu_6510:
         self.opcodes[0x80] = self.NOP_immediate
         self.opcodes[0x81] = self.ST_indirect_x
         self.opcodes[0x82] = self.NOP_immediate
+        self.opcodes[0x83] = self.SAX_indirect_x
         self.opcodes[0x84] = self.ST_zeropage
         self.opcodes[0x85] = self.ST_zeropage
         self.opcodes[0x86] = self.ST_zeropage
+        self.opcodes[0x87] = self.SAX_zeropage
         self.opcodes[0x88] = self.DEY
         self.opcodes[0x89] = self.NOP_immediate
         self.opcodes[0x8a] = self.TXA
         self.opcodes[0x8c] = self.ST_absolute
         self.opcodes[0x8d] = self.ST_absolute
         self.opcodes[0x8e] = self.ST_absolute
+        self.opcodes[0x8f] = self.SAX_absolute
         self.opcodes[0x90] = self.BCC
         self.opcodes[0x91] = self.ST_indirect_y
         self.opcodes[0x94] = self.ST_zeropage_x
         self.opcodes[0x95] = self.ST_zeropage_x
         self.opcodes[0x96] = self.ST_zeropage_y
+        self.opcodes[0x97] = self.SAX_zeropage_y
         self.opcodes[0x98] = self.TYA
         self.opcodes[0x99] = self.ST_absolute_y
         self.opcodes[0x9a] = self.TXS
@@ -1028,6 +1032,11 @@ class cpu_6510:
         self.bus.write(addr, register)
         self.cycles += 3
 
+    def SAX_zeropage(self, opcode):
+        addr = self.read_pc()
+        self.bus.write(addr, self.a & self.x)
+        self.cycles += 3
+
     def ST_zeropage_x(self, opcode):
         if opcode == 0x94:
             self.bus.write(self.addr_zeropage_x(), self.y)
@@ -1039,6 +1048,10 @@ class cpu_6510:
 
     def ST_zeropage_y(self, opcode):
         self.bus.write(self.addr_zeropage_y(), self.x)
+        self.cycles += 4
+
+    def SAX_zeropage_y(self, opcode):
+        self.bus.write(self.addr_zeropage_y(), self.a & self.x)
         self.cycles += 4
 
     def ST_absolute(self, opcode):
@@ -1053,6 +1066,10 @@ class cpu_6510:
         self.bus.write(self.read_pc_16b(), val)
         self.cycles += 4
 
+    def SAX_absolute(self, opcode):
+        self.bus.write(self.read_pc_16b(), self.a & self.x)
+        self.cycles += 4
+
     def ST_absolute_x(self, opcode):
         self.bus.write(self.addr_absolute_x(), self.a)
         self.cycles += 5
@@ -1063,6 +1080,10 @@ class cpu_6510:
 
     def ST_indirect_x(self, opcode):
         self.bus.write(self.addr_indirect_x(), self.a)
+        self.cycles += 6
+
+    def SAX_indirect_x(self, opcode):
+        self.bus.write(self.addr_indirect_x(), self.a & self.x)
         self.cycles += 6
 
     def ST_indirect_y(self, opcode):
