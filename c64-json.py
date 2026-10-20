@@ -36,7 +36,7 @@ for test in j:
 
     def ma(a, b, name, test_name):
         if a != b:
-            print(f'test {test_name}, mismatch for {name}: expected {b:02x}, got {a:02x}')
+            print(f'test {test_name}, mismatch for {name}: expected {b:02x} ({b}), got {a:02x} ({a})')
             global errors
             errors = True
 
