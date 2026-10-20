@@ -87,7 +87,7 @@ def ffs(x):
     """Returns the index, counting from 0, of the
     least significant set bit in `x`.
     """
-    return (x&-x).bit_length()-1
+    return (x & -x).bit_length() - 1
 
 assert(len(rows) == 8)
 
@@ -115,9 +115,10 @@ class cia1(cia, Thread):
             if event[0] == sdl2.SDL_KEYDOWN:
                 if self.rt_kb:
                     self.keys_pressed.add(event[1])
+                    self.bus.log.print('%d is pressed' % event[1])
                 else:
-                    self.keys_queue.append(event[1])
-                self.bus.log.print('%d is pressed' % event[1])
+                    self.keys_queue.append([event[1], 10])
+                    self.bus.log.print('%d is pressed, %d queued' % (event[1], len(self.keys_queue)))
 
             elif event[0] == sdl2.SDL_KEYUP:
                 if self.rt_kb:
@@ -139,10 +140,15 @@ class cia1(cia, Thread):
                             if keys[0] in self.keys_pressed:
                                 pattern |= keys[1]
                         else:
-                            if len(self.keys_queue) > 0 and keys[0] == self.keys_queue[0]:
-                                pattern = keys[1]
+                            if len(self.keys_queue) > 0 and keys[0] == self.keys_queue[0][0]:
+                                self.keys_queue[0][1] -= 1  # de-bounce
+                                if self.keys_queue[0][1] > 0:
+                                    pattern = keys[1]
+                                    self.bus.log.print(f'{self.keys_queue[0][0]} is scanned, return {pattern:02x}, rows: {self.registers[0]:02x}')
+                                    return pattern ^ 255
+                                self.bus.log.print(f'{self.keys_queue[0][0]} is scanned, return 0, rows: {self.registers[0]:02x}')
                                 del self.keys_queue[0]
-                                return pattern ^ 255
+                                return 0 ^ 255
                 return pattern ^ 255
 
         return cia.read(self, addr)
