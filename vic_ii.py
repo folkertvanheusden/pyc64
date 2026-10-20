@@ -206,14 +206,11 @@ class vic_ii(Thread):
                             char_scan_line = self.bus.character_rom.read(addr_chargen + row)
 
                             y = line * 8 + row
-
                             xc = x * 8
-
                             mask = 128
 
                             for col in range(xc, xc + 8):
                                 pixelview[y][col] = fg_color if char_scan_line & mask else bg_color
-
                                 mask >>= 1
 
             else:

@@ -16,22 +16,17 @@ class filelf():
 
     def print(self, string):
         self.emit_ts()
-
         self.ts = True
-
         self.fh.write(string + '\n')
 
     def print_no_lf(self, string):
         self.emit_ts()
-
         self.ts = False
-
         self.fh.write(string)
 
 class bus_base:
     def __init__(self):
         self.ram = None
-
         self.log = filelf('log.dat', 'a')
 
     def reset(self):
