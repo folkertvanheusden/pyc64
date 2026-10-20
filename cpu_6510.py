@@ -738,72 +738,64 @@ class cpu_6510:
         olda = self.a
 
         if self.p & self.flags.DECIMAL:
+            a = self.a
+            carry = 1 if (self.p & self.flags.CARRY) else 0
+
+            self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
+
             if sub:
-                carry = 0 if (self.p & self.flags.CARRY) else 1
+                # NMOS 6502: all flags come from the binary result
+                total = a - value - (1 - carry)
+                result = total & 0xff
 
-                self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
-
-                lo_nibble1 = self.a & 0x0f
-                lo_nibble2 = value & 0x0f
-                lo_nibble3 = lo_nibble1 - lo_nibble2 - carry
-
-                h_carry = 0
-
-                if lo_nibble3 < 0:
-                    lo_nibble3 += 10
-                    h_carry = 1
-
-                hi_nibble1 = self.a >> 4
-                hi_nibble2 = value >> 4
-                hi_nibble3 = hi_nibble1 - hi_nibble2 - h_carry
-
-                if hi_nibble3 < 0:
-                    hi_nibble3 += 10
-
-                else:  # NOT borrow  (!carry)
+                if total >= 0:
                     self.p |= self.flags.CARRY
 
-                result = (hi_nibble3 << 4) | lo_nibble3
-
-                if (olda ^ result) & (value ^ result) & 0x80:
+                if (a ^ value) & (a ^ result) & 0x80:
                     self.p |= self.flags.OVERFLOW
 
-                self.a = result
+                lo = (a & 0x0f) - (value & 0x0f) - (1 - carry)
+                hi = (a >> 4) - (value >> 4)
 
-                self.set_NZ_flags(self.a)
+                if lo < 0:
+                    lo = ((lo - 6) & 0x0f)
+                    hi -= 1
+
+                if hi < 0:
+                    hi -= 6
+
+                self.set_NZ_flags(result)
+
+                self.a = ((hi << 4) | lo) & 0xff
 
             else:
-                carry = 1 if (self.p & self.flags.CARRY) else 0
+                # NMOS 6502: Z from binary result, N and V from intermediate value
+                binary = (a + value + carry) & 0xff
 
-                self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
+                lo = (a & 0x0f) + (value & 0x0f) + carry
+                if lo > 9:
+                    lo = ((lo + 6) & 0x0f) + 0x10
 
-                lo_nibble1 = self.a & 0x0f
-                lo_nibble2 = value & 0x0f
-                lo_nibble3 = lo_nibble1 + lo_nibble2 + carry
+                total = (a & 0xf0) + (value & 0xf0) + lo
 
-                h_carry = 0
-
-                if lo_nibble3 > 9:
-                    lo_nibble3 -= 10
-                    h_carry = 1
-
-                hi_nibble1 = self.a >> 4
-                hi_nibble2 = value >> 4
-                hi_nibble3 = hi_nibble1 + hi_nibble2 + h_carry
-
-                if hi_nibble3 > 9:
-                    hi_nibble3 -= 10
-                    self.p |= self.flags.CARRY
-
-                result = (hi_nibble3 << 4) | lo_nibble3
-
-                if (olda ^ result) & (value ^ result) & 0x80:
+                if (~(a ^ value)) & (a ^ total) & 0x80:
                     self.p |= self.flags.OVERFLOW
 
-                self.a = result
+                if total >= 0xa0:
+                    total += 0x60
 
-                self.set_NZ_flags(self.a)
+                if total > 0xff:
+                    self.p |= self.flags.CARRY
 
+                self.a = total & 0xff
+
+                self.set_NZ_flags(binary)
+
+                # N comes from the intermediate result
+                if (lo + (a & 0xf0) + (value & 0xf0)) & 0x80:
+                    self.p |= self.flags.NEGATIVE
+                else:
+                    self.p &= ~self.flags.NEGATIVE
         else:
             if sub:
                 value ^= 0xff
