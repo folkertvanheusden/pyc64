@@ -1,3 +1,4 @@
+import ctypes
 import curses
 import sdl2
 import sdl2.ext
@@ -9,6 +10,8 @@ class vic_ii(Thread):
 
         self.cycle = 0
         self.raster_line = 0
+
+        self.c64res = (320, 200)
 
         self.screen_ram = [ 0 ] * 1024
         self.color_ram  = [ 0 ] * 1000
@@ -129,30 +132,35 @@ class vic_ii(Thread):
     def run(self):
         sdl2.ext.init()
 
-        window = sdl2.ext.Window('PyC64', size=(640, 480))
+        window = sdl2.ext.Window('PyC64', size=(1024, 768))
         window.show()
 
-        windowsurface = window.get_surface()
+        render_flags = sdl2.SDL_RENDERER_ACCELERATED | sdl2.SDL_RENDERER_PRESENTVSYNC
+        r = sdl2.ext.Renderer(window, flags=render_flags, logical_size=self.c64res)
+        texture = sdl2.SDL_CreateTexture(r.sdlrenderer, sdl2.SDL_PIXELFORMAT_RGBA32, sdl2.SDL_TEXTUREACCESS_STREAMING, self.c64res[0], self.c64res[1])
+        pixels = bytearray(self.c64res[0] * self.c64res[1] * 4)
 
-        pixelview = sdl2.ext.PixelView(windowsurface)
+        def set_pixel(x, y, color):
+            i = (y * self.c64res[0] + x) * 4
+            pixels[i:i + 4] = bytes(color)
 
         palette = [
-                sdl2.ext.Color(0x00, 0x00, 0x00),
-                sdl2.ext.Color(0xFF, 0xFF, 0xFF),
-                sdl2.ext.Color(0x68, 0x37, 0x2B),
-                sdl2.ext.Color(0x70, 0xA4, 0xB2),
-                sdl2.ext.Color(0x6F, 0x3D, 0x86),
-                sdl2.ext.Color(0x58, 0x8D, 0x43),
-                sdl2.ext.Color(0x35, 0x28, 0x79),
-                sdl2.ext.Color(0xB8, 0xC7, 0x6F),
-                sdl2.ext.Color(0x6F, 0x4F, 0x25),
-                sdl2.ext.Color(0x43, 0x39, 0x00),
-                sdl2.ext.Color(0x9A, 0x67, 0x59),
-                sdl2.ext.Color(0x44, 0x44, 0x44),
-                sdl2.ext.Color(0x6C, 0x6C, 0x6C),
-                sdl2.ext.Color(0x9A, 0xD2, 0x84),
-                sdl2.ext.Color(0x6C, 0x5E, 0xB5),
-                sdl2.ext.Color(0x95, 0x95, 0x95)
+                (0x00, 0x00, 0x00, 255),
+                (0xFF, 0xFF, 0xFF, 255),
+                (0x68, 0x37, 0x2B, 255),
+                (0x70, 0xA4, 0xB2, 255),
+                (0x6F, 0x3D, 0x86, 255),
+                (0x58, 0x8D, 0x43, 255),
+                (0x35, 0x28, 0x79, 255),
+                (0xB8, 0xC7, 0x6F, 255),
+                (0x6F, 0x4F, 0x25, 255),
+                (0x43, 0x39, 0x00, 255),
+                (0x9A, 0x67, 0x59, 255),
+                (0x44, 0x44, 0x44, 255),
+                (0x6C, 0x6C, 0x6C, 255),
+                (0x9A, 0xD2, 0x84, 255),
+                (0x6C, 0x5E, 0xB5, 255),
+                (0x95, 0x95, 0x95, 255),
                 ]
 
         line = 0
@@ -210,14 +218,19 @@ class vic_ii(Thread):
                             mask = 128
 
                             for col in range(xc, xc + 8):
-                                pixelview[y][col] = fg_color if char_scan_line & mask else bg_color
+                                set_pixel(col, y, fg_color if char_scan_line & mask else bg_color)
                                 mask >>= 1
 
             else:
                 pass
 
-            del pixelview
-            pixelview = sdl2.ext.PixelView(windowsurface)
+            # Upload framebuffer
+            buf = (ctypes.c_ubyte * len(pixels)).from_buffer(pixels)
+            sdl2.SDL_UpdateTexture(texture, None, buf, self.c64res[0] * 4)
+            sdl2.SDL_RenderClear(r.sdlrenderer)
+            dst = sdl2.SDL_Rect(0, 0, self.c64res[0], self.c64res[1])
+            sdl2.SDL_RenderCopy(r.sdlrenderer, texture, None, dst)
+            sdl2.SDL_RenderPresent(r.sdlrenderer)
 
             window.refresh()
 
