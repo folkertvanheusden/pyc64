@@ -19,7 +19,11 @@ class ram(bus_device):
         return False
 
     def read(self, addr):
+        assert self.ram[addr] >= 0
+        assert self.ram[addr] <= 255
         return self.ram[addr]
 
     def write(self, addr, value):
+        assert value >= 0
+        assert value <= 255
         self.ram[addr] = value
