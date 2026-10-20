@@ -18,15 +18,44 @@ class vic_ii(Thread):
 
         self.update = False
 
+        # scale color value from 0...255 to 0...1000
+        def sc(v):
+            return v * 1000 // 255
+
         curses.start_color()
-        curses.init_pair(0 + 1, curses.COLOR_WHITE  , curses.COLOR_BLACK)
-        curses.init_pair(1 + 1, curses.COLOR_BLACK  , curses.COLOR_WHITE)
-        curses.init_pair(2 + 1, curses.COLOR_RED    , curses.COLOR_BLACK)
-        curses.init_pair(3 + 1, curses.COLOR_CYAN   , curses.COLOR_BLACK)
-        curses.init_pair(4 + 1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-        curses.init_pair(5 + 1, curses.COLOR_GREEN  , curses.COLOR_BLACK)
-        curses.init_pair(6 + 1, curses.COLOR_BLUE   , curses.COLOR_BLACK)
-        curses.init_pair(7 + 1, curses.COLOR_YELLOW , curses.COLOR_BLACK)
+        if curses.can_change_color():
+            o = curses.COLORS - 16
+            curses.init_color(o + 0, sc(0), sc(0), sc(0))  # black
+            curses.init_color(o + 1, sc(0xff), sc(0xff), sc(0xff))  # white
+            curses.init_color(o + 2, sc(0x68), sc(0x37), sc(0x2b))  # red
+            curses.init_color(o + 3, sc(0x70), sc(0xa4), sc(0xb2))  # light blue
+            curses.init_color(o + 4, sc(0x6F), sc(0x3D), sc(0x86))  # purple
+            curses.init_color(o + 5, sc(0x58), sc(0x8D), sc(0x43))  # green
+            curses.init_color(o + 6, sc(0x35), sc(0x28), sc(0x79))  # dark blue
+            curses.init_color(o + 7, sc(0xB8), sc(0xC7), sc(0x6F))  # yellow
+            curses.init_color(o + 8, sc(0x6F), sc(0x4F), sc(0x25))  # brown
+            curses.init_color(o + 9, sc(0x43), sc(0x39), sc(0x00))  # dark brown
+            curses.init_color(o + 10, sc(0x9A), sc(0x67), sc(0x59))  # light red
+            curses.init_color(o + 11, sc(0x44), sc(0x44), sc(0x44))  # dark grey
+            curses.init_color(o + 12, sc(0x6C), sc(0x6C), sc(0x6C))  # mid grey
+            curses.init_color(o + 13, sc(0x9A), sc(0xD2), sc(0x84))  # light green
+            curses.init_color(o + 14, sc(0x6C), sc(0x5E), sc(0xB5))  # mid blue
+            curses.init_color(o + 15, sc(0x95), sc(0x95), sc(0x95))  # light grey
+
+            for bg in range(16):
+                ocb = curses.COLORS - 16 + bg
+                for fg in range(16):
+                    ocg = curses.COLORS - 16 + fg
+                    curses.init_pair(fg * 16 + bg + 1, ocb, ocg)
+        else:
+            curses.init_pair(0 + 1, curses.COLOR_BLACK  , curses.COLOR_WHITE)
+            curses.init_pair(1 + 1, curses.COLOR_WHITE  , curses.COLOR_BLACK)
+            curses.init_pair(2 + 1, curses.COLOR_RED    , curses.COLOR_BLACK)
+            curses.init_pair(3 + 1, curses.COLOR_CYAN   , curses.COLOR_BLACK)
+            curses.init_pair(4 + 1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+            curses.init_pair(5 + 1, curses.COLOR_GREEN  , curses.COLOR_BLACK)
+            curses.init_pair(6 + 1, curses.COLOR_BLUE   , curses.COLOR_BLACK)
+            curses.init_pair(7 + 1, curses.COLOR_YELLOW , curses.COLOR_BLACK)
 
     def begin(self, bus):
         self.bus = bus
@@ -86,9 +115,12 @@ class vic_ii(Thread):
             addr -= 0xd800
 
             self.color_ram[addr] = value
-
-            #self.window.chgat(addr // 40, addr % 40, curses.color_pair((value & 7) + 1))
-
+            value &= 0x0f  # https://www.c64-wiki.com/wiki/Color_RAM
+            value |= (self.registers[0xd021 - 0xd000] & 0x0f) << 4
+            if curses.can_change_color():
+                self.window.chgat(addr // 40, addr % 40, curses.color_pair(value + 1))
+            else:
+                self.window.chgat(addr // 40, addr % 40, curses.color_pair((value & 7) + 1))
             self.update = True
 
         else:
