@@ -750,18 +750,20 @@ class cpu_6510:
                 h_carry = 0
 
                 if lo_nibble3 < 0:
-                    lo_nibble3 += 10
+                    lo_nibble3 -= 6
                     h_carry = 1
+                lo_nibble3 &= 0x0f
 
                 hi_nibble1 = self.a >> 4
                 hi_nibble2 = value >> 4
                 hi_nibble3 = hi_nibble1 - hi_nibble2 - h_carry
 
                 if hi_nibble3 < 0:
-                    hi_nibble3 += 10
+                    hi_nibble3 -= 6
 
                 else:  # NOT borrow  (!carry)
                     self.p |= self.flags.CARRY
+                hi_nibble3 &= 0x0f
 
                 result = (hi_nibble3 << 4) | lo_nibble3
 
