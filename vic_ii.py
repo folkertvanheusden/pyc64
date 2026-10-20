@@ -21,6 +21,25 @@ class vic_ii(Thread):
 
         self.update = False
 
+        self.palette = [
+                (0x00, 0x00, 0x00, 255),
+                (0xFF, 0xFF, 0xFF, 255),
+                (0x68, 0x37, 0x2B, 255),
+                (0x70, 0xA4, 0xB2, 255),
+                (0x6F, 0x3D, 0x86, 255),
+                (0x58, 0x8D, 0x43, 255),
+                (0x35, 0x28, 0x79, 255),
+                (0xB8, 0xC7, 0x6F, 255),
+                (0x6F, 0x4F, 0x25, 255),
+                (0x43, 0x39, 0x00, 255),
+                (0x9A, 0x67, 0x59, 255),
+                (0x44, 0x44, 0x44, 255),
+                (0x6C, 0x6C, 0x6C, 255),
+                (0x9A, 0xD2, 0x84, 255),
+                (0x6C, 0x5E, 0xB5, 255),
+                (0x95, 0x95, 0x95, 255),
+                ]
+
         # scale color value from 0...255 to 0...1000
         def sc(v):
             return v * 1000 // 255
@@ -28,22 +47,8 @@ class vic_ii(Thread):
         curses.start_color()
         if curses.can_change_color():
             o = curses.COLORS - 16
-            curses.init_color(o + 0, sc(0), sc(0), sc(0))  # black
-            curses.init_color(o + 1, sc(0xff), sc(0xff), sc(0xff))  # white
-            curses.init_color(o + 2, sc(0x68), sc(0x37), sc(0x2b))  # red
-            curses.init_color(o + 3, sc(0x70), sc(0xa4), sc(0xb2))  # light blue
-            curses.init_color(o + 4, sc(0x6F), sc(0x3D), sc(0x86))  # purple
-            curses.init_color(o + 5, sc(0x58), sc(0x8D), sc(0x43))  # green
-            curses.init_color(o + 6, sc(0x35), sc(0x28), sc(0x79))  # dark blue
-            curses.init_color(o + 7, sc(0xB8), sc(0xC7), sc(0x6F))  # yellow
-            curses.init_color(o + 8, sc(0x6F), sc(0x4F), sc(0x25))  # brown
-            curses.init_color(o + 9, sc(0x43), sc(0x39), sc(0x00))  # dark brown
-            curses.init_color(o + 10, sc(0x9A), sc(0x67), sc(0x59))  # light red
-            curses.init_color(o + 11, sc(0x44), sc(0x44), sc(0x44))  # dark grey
-            curses.init_color(o + 12, sc(0x6C), sc(0x6C), sc(0x6C))  # mid grey
-            curses.init_color(o + 13, sc(0x9A), sc(0xD2), sc(0x84))  # light green
-            curses.init_color(o + 14, sc(0x6C), sc(0x5E), sc(0xB5))  # mid blue
-            curses.init_color(o + 15, sc(0x95), sc(0x95), sc(0x95))  # light grey
+            for i in range(16):
+                curses.init_color(o + i, sc(self.palette[i][0]), sc(self.palette[i][1]), sc(self.palette[i][2]))
 
             for bg in range(16):
                 ocb = curses.COLORS - 16 + bg
@@ -144,25 +149,6 @@ class vic_ii(Thread):
             i = (y * self.c64res[0] + x) * 4
             pixels[i:i + 4] = bytes(color)
 
-        palette = [
-                (0x00, 0x00, 0x00, 255),
-                (0xFF, 0xFF, 0xFF, 255),
-                (0x68, 0x37, 0x2B, 255),
-                (0x70, 0xA4, 0xB2, 255),
-                (0x6F, 0x3D, 0x86, 255),
-                (0x58, 0x8D, 0x43, 255),
-                (0x35, 0x28, 0x79, 255),
-                (0xB8, 0xC7, 0x6F, 255),
-                (0x6F, 0x4F, 0x25, 255),
-                (0x43, 0x39, 0x00, 255),
-                (0x9A, 0x67, 0x59, 255),
-                (0x44, 0x44, 0x44, 255),
-                (0x6C, 0x6C, 0x6C, 255),
-                (0x9A, 0xD2, 0x84, 255),
-                (0x6C, 0x5E, 0xB5, 255),
-                (0x95, 0x95, 0x95, 255),
-                ]
-
         line = 0
 
         running = True
@@ -197,7 +183,7 @@ class vic_ii(Thread):
 
             if screen_mode == 0:
                 bg_color_index = self.bus.i_o.read(0xd021) & 15
-                bg_color = palette[bg_color_index]
+                bg_color = self.palette[bg_color_index]
 
                 for line in range(0, 25):
                     offset = line * 40
@@ -208,7 +194,7 @@ class vic_ii(Thread):
                         addr_chargen = 0xd000 + b * 8
 
                         fg_color_index = self.color_ram[offset + x] & 15
-                        fg_color = palette[fg_color_index]
+                        fg_color = self.palette[fg_color_index]
 
                         for row in range(0, 8):
                             char_scan_line = self.bus.character_rom.read(addr_chargen + row)
