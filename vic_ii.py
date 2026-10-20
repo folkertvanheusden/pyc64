@@ -190,22 +190,21 @@ class vic_ii(Thread):
 
                     for x in range(0, 40):
                         b = self.bus.read(0x0400 + offset + x)
-
                         addr_chargen = 0xd000 + b * 8
-
                         fg_color_index = self.color_ram[offset + x] & 15
                         fg_color = self.palette[fg_color_index]
 
+                        y = line * 8
                         for row in range(0, 8):
                             char_scan_line = self.bus.character_rom.read(addr_chargen + row)
-
-                            y = line * 8 + row
                             xc = x * 8
                             mask = 128
 
                             for col in range(xc, xc + 8):
                                 set_pixel(col, y, fg_color if char_scan_line & mask else bg_color)
                                 mask >>= 1
+
+                            y += 1
 
             else:
                 pass
