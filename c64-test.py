@@ -8,7 +8,7 @@ from cpu_6510 import cpu_6510
 
 class cbm64:
     def __init__(self):
-        self.bus = bus_test()
+        self.bus = bus_test(True)
         self.cpu = cpu_6510(self.bus)
 
     def reset(self):

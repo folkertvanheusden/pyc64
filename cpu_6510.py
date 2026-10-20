@@ -528,11 +528,10 @@ class cpu_6510:
         #self.disassem(self.pc)
 
         opcode = self.read_pc()
-
-        if not self.opcodes[opcode]:
-            print('%02x' % opcode)
-        else:
+        if self.opcodes[opcode]:
             self.opcodes[opcode](opcode)
+            return True
+        return False
 
     def push_stack(self, val):
         self.bus.write(self.sp + 0x100, val)
