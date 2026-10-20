@@ -1357,9 +1357,9 @@ class cpu_6510:
         self.cycles += 5
 
     def JSR(self, opcode):
-        new_addr = self.read_pc_16b()
-        self.push_stack_16b((self.pc - 1) & 0xffff)
-        self.pc = new_addr
+        l_byte = self.read_pc()
+        self.push_stack_16b(self.pc)
+        self.pc = l_byte + (self.read_pc() << 8)
         self.cycles += 6
 
     def SEI(self, opcode):
