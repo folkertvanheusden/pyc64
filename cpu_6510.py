@@ -160,7 +160,7 @@ class cpu_6510:
         self.opcodes[0xbc] = self.LDY_absolute_x
         self.opcodes[0xbd] = self.LDA_absolute_x
         self.opcodes[0xbe] = self.LDX_absolute_y
-        self.opcodes[0xbf] = self.LAX_absolute_x
+        self.opcodes[0xbf] = self.LAX_absolute_y
         self.opcodes[0xc0] = self.CMP_immediate
         self.opcodes[0xc1] = self.CMP_indirect_x
         self.opcodes[0xc2] = self.NOP_immediate
@@ -975,8 +975,8 @@ class cpu_6510:
         self.set_NZ_flags(self.a)
         self.cycles += 4
 
-    def LAX_absolute_x(self, opcode):
-        self.a = self.data_absolute_x()
+    def LAX_absolute_y(self, opcode):
+        self.a = self.data_absolute_y()
         self.x = self.a
         self.set_NZ_flags(self.a)
         self.cycles += 4
