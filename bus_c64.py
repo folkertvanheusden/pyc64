@@ -91,6 +91,9 @@ class bus_c64(bus_base):
 
         self.cpu = cpu_6510(self)
 
+    def get_cia1(self):
+        return self.cia1
+
     def reset(self):
         self.bs_setting = 31
 

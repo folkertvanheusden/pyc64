@@ -31,6 +31,9 @@ class cbm64:
 
             #self.bus.cpu.pc = prg_addr
 
+    def get_bus(self):
+        return self.bus
+
     def reset(self):
         self.cpu.reset()
 
@@ -38,8 +41,12 @@ class cbm64:
         while True:
             self.bus.tick()
 
-c64 = cbm64()
+#c64 = cbm64()
 #c64 = cbm64('matrix_bugfix.prg', 2061)
 #c64 = cbm64('AllSuiteA.prg', 2061)
 #c64 = cbm64('docs/ciadiag.prg', 2064)
+#c64 = cbm64('codefacerise1fall1.prg', 2061)
+if len(sys.argv) == 2:
+    c64 = cbm64(sys.argv[1], 2061)
+#c64.get_bus().get_cia1().set_kb_rt(False)
 c64.run()

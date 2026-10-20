@@ -97,22 +97,31 @@ class cia1(cia, Thread):
         cia.__init__(self, bus)
 
         self.cia_idx = 1
-
         self.keys_pressed = set()
+
+        self.rt_kb = True
+        self.keys_queue = []
 
     def trigger_interrupt(self):
         self.bus.cpu.IRQ()
+
+    def set_kb_rt(self, state):
+        self.rt_kb = state
 
     def run(self):
         while True:
             event = self.bus.event_queue.get()
 
             if event[0] == sdl2.SDL_KEYDOWN:
-                self.keys_pressed.add(event[1])
+                if self.rt_kb:
+                    self.keys_pressed.add(event[1])
+                else:
+                    self.keys_queue.append(event[1])
                 self.bus.log.print('%d is pressed' % event[1])
 
             elif event[0] == sdl2.SDL_KEYUP:
-                self.keys_pressed.remove(event[1])
+                if self.rt_kb:
+                    self.keys_pressed.remove(event[1])
                 self.bus.log.print('%d is no longer pressed' % event[1])
 
     def read(self, addr):
@@ -126,8 +135,14 @@ class cia1(cia, Thread):
                     if self.registers[0] & (1 << row):
                         continue
                     for keys in rows[row]:
-                        if keys[0] in self.keys_pressed:
-                            pattern |= keys[1]
+                        if self.rt_kb:
+                            if keys[0] in self.keys_pressed:
+                                pattern |= keys[1]
+                        else:
+                            if len(self.keys_queue) > 0 and keys[0] == self.keys_queue[0]:
+                                pattern = keys[1]
+                                del self.keys_queue[0]
+                                return pattern ^ 255
                 return pattern ^ 255
 
         return cia.read(self, addr)
