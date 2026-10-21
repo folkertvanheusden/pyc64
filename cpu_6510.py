@@ -569,7 +569,8 @@ class cpu_6510:
     def set_NZ_flags(self, result_value):
         self.p &= ~(self.flags.NEGATIVE | self.flags.ZERO)
 
-        if result_value > 127:  # NEGATIVE
+        assert result_value >= 0
+        if result_value >= 128:  # NEGATIVE
             self.p |= self.flags.NEGATIVE
 
         if result_value == 0:  # ZERO
