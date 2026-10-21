@@ -30,9 +30,16 @@ for test in j:
     for entry in initial['ram']:
         bus.ram.write(entry[0], entry[1])
 
-    if cpu.tick() == False:
-        print(f'test {test["name"]}: opcode not implemented')
-        sys.exit(1)
+    cur_err = False
+    test_name = test['name']
+
+    try:
+        if cpu.tick() == False:
+            print(f'test {test["name"]}: opcode not implemented')
+            sys.exit(1)
+    except AssertionError as ae:
+        print(f'test {test_name}: assertion error {ae}')
+        cur_err = True
 
     def ma(a, b, name, test_name):
         if a != b:
@@ -43,8 +50,6 @@ for test in j:
             return True
         return False
 
-    test_name = test['name']
-    cur_err = False
     final = test['final']
     cur_err |= ma(cpu.pc, final['pc'], 'pc', test_name)
     cur_err |= ma(cpu.sp, final['s'], 'sp', test_name)
