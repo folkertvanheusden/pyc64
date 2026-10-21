@@ -36,18 +36,47 @@ for test in j:
 
     def ma(a, b, name, test_name):
         if a != b:
-            print(f'test {test_name}, mismatch for {name}: expected {b:02x} ({b}), got {a:02x} ({a})')
+            if type(a) == str:
+                print(f'test {test_name}, mismatch for {name}: expected {b}, got {a}')
+            else:
+                print(f'test {test_name}, mismatch for {name}: expected {b:02x} ({b}), got {a:02x} ({a})')
             global errors
             errors = True
 
+    test_name = test['name']
+
     final = test['final']
-    ma(cpu.pc, final['pc'], 'pc', test['name'])
-    ma(cpu.sp, final['s'], 'sp', test['name'])
-    ma(cpu.a, final['a'], 'a', test['name'])
-    ma(cpu.x, final['x'], 'x', test['name'])
-    ma(cpu.y, final['y'], 'y', test['name'])
-    # ma(cpu.p, final['p'], 'p', test['name'])
+    ma(cpu.pc, final['pc'], 'pc', test_name)
+    ma(cpu.sp, final['s'], 'sp', test_name)
+    ma(cpu.a, final['a'], 'a', test_name)
+    ma(cpu.x, final['x'], 'x', test_name)
+    ma(cpu.y, final['y'], 'y', test_name)
+    # ma(cpu.p, final['p'], 'p', test_name)
     for entry in final['ram']:
-        ma(bus.ram.read(entry[0]), entry[1], f'RAM:{entry[0]:04x}', test['name'])
+        ma(bus.ram.read(entry[0]), entry[1], f'RAM:{entry[0]:04x}', test_name)
+    cycles = test['cycles']
+    #n_cycles = len(cycles)
+    #ma(len(bus.actions) - 2, n_cycles, 'cycles', test_name)
+    #for c in range(n_cycles):
+    #    cur_action = bus.actions[c + 2]
+    #    cmp_cycle = cycles[c]
+    #    ma(cur_action[0], cmp_cycle[0], 'cycles:addr', test_name)
+    #    ma(cur_action[1], cmp_cycle[1], 'cycles:value', test_name)
+    #    ma(cur_action[2], cmp_cycle[2], 'cycles:action', test_name)
+    # simplified as pyc64 is not emulating each step of an instruction
+    for action in bus.actions[2:]:  # skip cpu init
+        if action[2] == 'read':
+            continue
+        assert action[2] == 'write'
+        match = False
+        for c in cycles:
+            if c[2] == 'read':
+                continue
+            if c[0] == action[0] and c[1] == action[1]:
+                match = True
+                break
+        if match == False:
+            print(f'test {test_name}, invalid RAM write to {action[0]}, value {action[1]}')
+            errors = True
 
 sys.exit(1 if errors else 0)

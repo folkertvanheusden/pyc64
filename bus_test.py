@@ -12,8 +12,15 @@ class bus_test(bus_base):
             self.ram: List[int] = [ int(b) for b in fh.read() ]
             fh.close()
 
+    def reset(self):
+        bus_base.reset(self)
+        self.actions = []
+
     def read(self, addr):
-        return self.ram.read(addr)
+        value = self.ram.read(addr)
+        self.actions.append((addr, value, 'read'))
+        return value
 
     def write(self, addr, value):
+        self.actions.append((addr, value, 'write'))
         self.ram.write(addr, value)
