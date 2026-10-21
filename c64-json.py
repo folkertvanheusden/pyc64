@@ -63,20 +63,25 @@ for test in j:
     #    ma(cur_action[0], cmp_cycle[0], 'cycles:addr', test_name)
     #    ma(cur_action[1], cmp_cycle[1], 'cycles:value', test_name)
     #    ma(cur_action[2], cmp_cycle[2], 'cycles:action', test_name)
-    # simplified as pyc64 is not emulating each step of an instruction
-    for action in bus.actions[2:]:  # skip cpu init
-        if action[2] == 'read':
-            continue
-        assert action[2] == 'write'
-        match = False
-        for c in cycles:
-            if c[2] == 'read':
+    def verify_cycles_simplified(a, b, what, test_name):
+        errors = False
+        for action in a:  # skip cpu init
+            if action[2] == 'read':
                 continue
-            if c[0] == action[0] and c[1] == action[1]:
-                match = True
-                break
-        if match == False:
-            print(f'test {test_name}, invalid RAM write to {action[0]}, value {action[1]}')
-            errors = True
+            assert action[2] == 'write'
+            match = False
+            for c in b:
+                if c[2] == 'read':
+                    continue
+                if c[0] == action[0] and c[1] == action[1]:
+                    match = True
+                    break
+            if match == False:
+                print(f'test {test_name}, invalid RAM write to {action[0]}, value {action[1]}')
+                errors = True
+        return errors
+    # simplified as pyc64 is not emulating each step of an instruction
+    errors |= verify_cycles_simplified(bus.actions[2:], cycles, 'invalid RAM write', test_name)
+    errors |= verify_cycles_simplified(cycles, bus.actions[2:], 'RAM write missing', test_name)
 
 sys.exit(1 if errors else 0)
