@@ -706,7 +706,6 @@ class cpu_6510:
             if self.pc == before:
                 print('LOOP AT %04x' % self.pc)
                 self.disassem(before)
-                assert False
 
         self.cycles += 2  # FIXME
 
