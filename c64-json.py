@@ -73,11 +73,12 @@ for test in j:
             for c in b:
                 if c[2] == 'read':
                     continue
+                assert c[2] == 'write'
                 if c[0] == action[0] and c[1] == action[1]:
                     match = True
                     break
             if match == False:
-                print(f'test {test_name}, invalid RAM write to {action[0]}, value {action[1]}')
+                print(f'test {test_name}, {what} to {action[0]}, value {action[1]}')
                 errors = True
         return errors
     errors |= cur_err
