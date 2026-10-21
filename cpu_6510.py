@@ -634,7 +634,8 @@ class cpu_6510:
     def addr_indirect_x(self):
         addr = self.x
         addr += self.read_pc()
-        addr2 = self.read16b(addr & 0xff)
+        addr2 = self.bus.read(addr & 0xff)
+        addr2 += self.bus.read((addr + 1) & 0xff) << 8
         return addr2
 
     def data_indirect_x(self):
