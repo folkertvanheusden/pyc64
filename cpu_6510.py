@@ -643,15 +643,9 @@ class cpu_6510:
 
     def addr_indirect_y(self):
         addr = self.read_pc()
-
-        if addr == 0x00ff:
-            addr2 = self.bus.read(0xff) | (self.bus.read(0x00) << 8)
-
-        else:
-            addr2 = self.read16b(addr)
-
+        addr2 = self.bus.read(addr)
+        addr2 += self.bus.read((addr + 1) & 0xff) << 8
         addr3 = (addr2 + self.y) & 0xffff
-
         return addr3
 
     def data_indirect_y(self):
@@ -1501,7 +1495,9 @@ class cpu_6510:
         self.cycles += 4
 
     def PLP(self, opcode):
-        self.p = self.pop_stack()
+        value = self.pop_stack()
+        value |= 32  # bit 5 is always set
+        self.p = value
         self.cycles += 4
 
     def ASL_accumulator(self, opcode):
