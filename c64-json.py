@@ -42,6 +42,8 @@ for test in j:
             if a != b:
                 if type(a) == str:
                     print(f'test {test_name}, mismatch for {name}: expected {b}, got {a}')
+                elif name == 'p':
+                    print(f'test {test_name}, mismatch for {name}: expected {b:02x} ({b:08b}), got {a:02x} ({a:08b}) - {a ^ b:08b}')
                 else:
                     print(f'test {test_name}, mismatch for {name}: expected {b:02x} ({b}), got {a:02x} ({a})')
                 return True
@@ -53,7 +55,7 @@ for test in j:
         cur_err |= ma(cpu.a, final['a'], 'a', test_name)
         cur_err |= ma(cpu.x, final['x'], 'x', test_name)
         cur_err |= ma(cpu.y, final['y'], 'y', test_name)
-        # ma(cpu.p, final['p'], 'p', test_name)
+        cur_err |= ma(cpu.p, final['p'], 'p', test_name)
         for entry in final['ram']:
             cur_err |= ma(bus.ram.read(entry[0]), entry[1], f'RAM:{entry[0]:04x}', test_name)
         cycles = test['cycles']
