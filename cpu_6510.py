@@ -733,74 +733,46 @@ class cpu_6510:
         olda = self.a
 
         if self.p & self.flags.DECIMAL:
+            # translation from vice 3.10
             if sub:
-                carry = 0 if (self.p & self.flags.CARRY) else 1
-
+                inv_carry = 0 if (self.p & self.flags.CARRY) else 1
+                tmp = self.a - value - inv_carry
+                tmp_a = (self.a & 0x0f) - (value & 0x0f) - inv_carry
+                if tmp_a & 0x10:
+                    tmp_a = ((tmp_a - 6) & 0xf) | ((self.a & 0xf0) - (value & 0xf0) - 0x10)
+                else:
+                    tmp_a = (tmp_a & 0xf) | ((self.a & 0xf0) - (value & 0xf0))
+                if tmp_a & 0x100:
+                    tmp_a -= 0x60
                 self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
-
-                lo_nibble1 = self.a & 0x0f
-                lo_nibble2 = value & 0x0f
-                lo_nibble3 = lo_nibble1 - lo_nibble2 - carry
-
-                h_carry = 0
-
-                if lo_nibble3 < 0:
-                    lo_nibble3 -= 6
-                    h_carry = 1
-                lo_nibble3 &= 0x0f
-
-                hi_nibble1 = self.a >> 4
-                hi_nibble2 = value >> 4
-                hi_nibble3 = hi_nibble1 - hi_nibble2 - h_carry
-
-                if hi_nibble3 < 0:
-                    hi_nibble3 -= 6
-
-                else:  # NOT borrow  (!carry)
-                    self.p |= self.flags.CARRY
-                hi_nibble3 &= 0x0f
-
-                result = (hi_nibble3 << 4) | lo_nibble3
-
-                if (olda ^ result) & (value ^ result) & 0x80:
+                if ((self.a ^ tmp) & 0x80) and ((self.a ^ value) & 0x80):
                     self.p |= self.flags.OVERFLOW
-
-                self.a = result
-
-                self.set_NZ_flags(self.a)
+                if tmp < 0x100:
+                    self.p |= self.flags.CARRY
+                self.set_NZ_flags(tmp & 0xff)
+                self.a = tmp_a
 
             else:
                 carry = 1 if (self.p & self.flags.CARRY) else 0
-
-                self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW)
-
-                lo_nibble1 = self.a & 0x0f
-                lo_nibble2 = value & 0x0f
-                lo_nibble3 = lo_nibble1 + lo_nibble2 + carry
-
-                h_carry = 0
-
-                if lo_nibble3 > 9:
-                    lo_nibble3 -= 10
-                    h_carry = 1
-
-                hi_nibble1 = self.a >> 4
-                hi_nibble2 = value >> 4
-                hi_nibble3 = hi_nibble1 + hi_nibble2 + h_carry
-
-                if hi_nibble3 > 9:
-                    hi_nibble3 -= 10
-                    self.p |= self.flags.CARRY
-
-                result = (hi_nibble3 << 4) | lo_nibble3
-
-                if (olda ^ result) & (value ^ result) & 0x80:
+                tmp = (self.a & 0x0f) + (value & 0x0f) + carry
+                if tmp > 0x9:
+                    tmp += 0x6
+                if tmp <= 0x0f:
+                    tmp = (tmp & 0x0f) + (self.a & 0xf0) + (value & 0xf0)
+                else:
+                    tmp = (tmp & 0x0f) + (self.a & 0xf0) + (value & 0xf0) + 0x10
+                self.p &= ~(self.flags.CARRY | self.flags.OVERFLOW | self.flags.NEGATIVE | self.flags.ZERO)
+                if ((self.a + value + carry) & 0xff) == 0:
+                    self.p |= self.flags.ZERO
+                if tmp & 0x80:
+                    self.p |= self.flags.NEGATIVE
+                if ((self.a ^ tmp) & 0x80) and not ((self.a ^ value) & 0x80):
                     self.p |= self.flags.OVERFLOW
-
-                self.a = result
-
-                self.set_NZ_flags(self.a)
-
+                if (tmp & 0x1f0) > 0x90:
+                    tmp += 0x60
+                if (tmp & 0xff0) > 0xf0:
+                    self.p |= self.flags.CARRY
+                self.a = tmp & 0xff
         else:
             if sub:
                 value ^= 0xff
